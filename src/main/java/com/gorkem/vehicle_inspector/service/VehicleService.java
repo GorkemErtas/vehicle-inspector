@@ -1,6 +1,9 @@
 package com.gorkem.vehicle_inspector.service;
 
+import com.gorkem.vehicle_inspector.dto.request.CreateVehicleRequest;
+import com.gorkem.vehicle_inspector.dto.response.VehicleResponse;
 import com.gorkem.vehicle_inspector.entity.Vehicle;
+import com.gorkem.vehicle_inspector.mapper.VehicleMapper;
 import com.gorkem.vehicle_inspector.repository.VehicleRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,26 +18,38 @@ public class VehicleService {
         this.vehicleRepository = vehicleRepository;
     }
 
-    public Vehicle createVehicle(Vehicle vehicle) {
-        if (vehicleRepository.existsByPlate(vehicle.getPlate())) {
+    public VehicleResponse createVehicle(CreateVehicleRequest request) {
+        String normalizedPlate = request.getPlate()
+                .trim()
+                .toUpperCase();
+
+        if (vehicleRepository.existsByPlate(normalizedPlate)) {
             throw new IllegalArgumentException(
-                    "Bu plakaya ait araç zaten kayıtlı: " + vehicle.getPlate()
+                    "Bu plakaya ait araç zaten kayıtlı: " + normalizedPlate
             );
         }
 
-        return vehicleRepository.save(vehicle);
+        Vehicle vehicle = VehicleMapper.toEntity(request);
+        Vehicle savedVehicle = vehicleRepository.save(vehicle);
+
+        return VehicleMapper.toResponse(savedVehicle);
     }
 
-    public List<Vehicle> getAllVehicles() {
-        return vehicleRepository.findAll();
+    public List<VehicleResponse> getAllVehicles() {
+        return vehicleRepository.findAll()
+                .stream()
+                .map(VehicleMapper::toResponse)
+                .toList();
     }
 
-    public Vehicle getVehicleById(Long id) {
-        return vehicleRepository.findById(id)
+    public VehicleResponse getVehicleById(Long id) {
+        Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() ->
                         new IllegalArgumentException(
                                 "Araç bulunamadı. ID: " + id
                         )
                 );
+
+        return VehicleMapper.toResponse(vehicle);
     }
 }

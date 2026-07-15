@@ -1,7 +1,9 @@
 package com.gorkem.vehicle_inspector.controller;
 
-import com.gorkem.vehicle_inspector.entity.Vehicle;
+import com.gorkem.vehicle_inspector.dto.request.CreateVehicleRequest;
+import com.gorkem.vehicle_inspector.dto.response.VehicleResponse;
 import com.gorkem.vehicle_inspector.service.VehicleService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,29 +21,30 @@ public class VehicleController {
     }
 
     @PostMapping
-    public ResponseEntity<Vehicle> createVehicle(
-            @RequestBody Vehicle vehicle
+    public ResponseEntity<VehicleResponse> createVehicle(
+            @Valid @RequestBody CreateVehicleRequest request
     ) {
-        Vehicle savedVehicle = vehicleService.createVehicle(vehicle);
+        VehicleResponse response =
+                vehicleService.createVehicle(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(savedVehicle);
+                .body(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<Vehicle>> getAllVehicles() {
-        List<Vehicle> vehicles = vehicleService.getAllVehicles();
-
-        return ResponseEntity.ok(vehicles);
+    public ResponseEntity<List<VehicleResponse>> getAllVehicles() {
+        return ResponseEntity.ok(
+                vehicleService.getAllVehicles()
+        );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Vehicle> getVehicleById(
+    public ResponseEntity<VehicleResponse> getVehicleById(
             @PathVariable Long id
     ) {
-        Vehicle vehicle = vehicleService.getVehicleById(id);
-
-        return ResponseEntity.ok(vehicle);
+        return ResponseEntity.ok(
+                vehicleService.getVehicleById(id)
+        );
     }
 }
