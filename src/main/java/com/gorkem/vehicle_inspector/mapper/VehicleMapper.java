@@ -3,6 +3,7 @@ package com.gorkem.vehicle_inspector.mapper;
 import com.gorkem.vehicle_inspector.dto.request.CreateVehicleRequest;
 import com.gorkem.vehicle_inspector.dto.response.VehicleResponse;
 import com.gorkem.vehicle_inspector.entity.Vehicle;
+import com.gorkem.vehicle_inspector.dto.request.UpdateVehicleRequest;
 
 public final class VehicleMapper {
 
@@ -28,5 +29,16 @@ public final class VehicleMapper {
                 vehicle.getModelYear(),
                 vehicle.getMileage()
         );
+    }
+
+    public static void updateEntity(
+            Vehicle vehicle,
+            UpdateVehicleRequest request
+    ) {
+        vehicle.setPlate(request.getPlate().trim().toUpperCase());
+        vehicle.setBrand(request.getBrand().trim());
+        vehicle.setModel(request.getModel().trim());
+        vehicle.setModelYear(request.getModelYear());
+        vehicle.setMileage(request.getMileage());
     }
 }

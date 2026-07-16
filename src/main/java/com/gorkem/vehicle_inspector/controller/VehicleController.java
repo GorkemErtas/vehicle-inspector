@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.gorkem.vehicle_inspector.dto.request.UpdateVehicleRequest;
 
 import java.util.List;
 
@@ -46,5 +47,25 @@ public class VehicleController {
         return ResponseEntity.ok(
                 vehicleService.getVehicleById(id)
         );
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<VehicleResponse> updateVehicle(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateVehicleRequest request
+    ) {
+        VehicleResponse response =
+                vehicleService.updateVehicle(id, request);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteVehicle(
+            @PathVariable Long id
+    ) {
+        vehicleService.deleteVehicle(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

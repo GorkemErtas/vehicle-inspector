@@ -1,8 +1,11 @@
 package com.gorkem.vehicle_inspector.service;
 
 import com.gorkem.vehicle_inspector.dto.request.CreateVehicleRequest;
+import com.gorkem.vehicle_inspector.dto.request.UpdateVehicleRequest;
 import com.gorkem.vehicle_inspector.dto.response.VehicleResponse;
 import com.gorkem.vehicle_inspector.entity.Vehicle;
+import com.gorkem.vehicle_inspector.exception.DuplicateResourceException;
+import com.gorkem.vehicle_inspector.exception.ResourceNotFoundException;
 import com.gorkem.vehicle_inspector.mapper.VehicleMapper;
 import com.gorkem.vehicle_inspector.repository.VehicleRepository;
 import org.springframework.stereotype.Service;
@@ -19,12 +22,10 @@ public class VehicleService {
     }
 
     public VehicleResponse createVehicle(CreateVehicleRequest request) {
-        String normalizedPlate = request.getPlate()
-                .trim()
-                .toUpperCase();
+        String normalizedPlate = normalizePlate(request.getPlate());
 
         if (vehicleRepository.existsByPlate(normalizedPlate)) {
-            throw new IllegalArgumentException(
+            throw new DuplicateResourceException(
                     "Bu plakaya ait araç zaten kayıtlı: " + normalizedPlate
             );
         }
@@ -43,13 +44,49 @@ public class VehicleService {
     }
 
     public VehicleResponse getVehicleById(Long id) {
-        Vehicle vehicle = vehicleRepository.findById(id)
+        Vehicle vehicle = findVehicleById(id);
+
+        return VehicleMapper.toResponse(vehicle);
+    }
+
+    public VehicleResponse updateVehicle(
+            Long id,
+            UpdateVehicleRequest request
+    ) {
+        Vehicle vehicle = findVehicleById(id);
+
+        String normalizedPlate = normalizePlate(request.getPlate());
+
+        if (vehicleRepository.existsByPlateAndIdNot(normalizedPlate, id)) {
+            throw new DuplicateResourceException(
+                    "Bu plaka başka bir araç tarafından kullanılıyor: "
+                            + normalizedPlate
+            );
+        }
+
+        VehicleMapper.updateEntity(vehicle, request);
+
+        Vehicle updatedVehicle = vehicleRepository.save(vehicle);
+
+        return VehicleMapper.toResponse(updatedVehicle);
+    }
+
+    public void deleteVehicle(Long id) {
+        Vehicle vehicle = findVehicleById(id);
+
+        vehicleRepository.delete(vehicle);
+    }
+
+    private Vehicle findVehicleById(Long id) {
+        return vehicleRepository.findById(id)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "Araç bulunamadı. ID: " + id
                         )
                 );
+    }
 
-        return VehicleMapper.toResponse(vehicle);
+    private String normalizePlate(String plate) {
+        return plate.trim().toUpperCase();
     }
 }
