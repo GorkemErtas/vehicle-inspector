@@ -3,6 +3,8 @@ package com.gorkem.vehicle_inspector.controller;
 import com.gorkem.vehicle_inspector.dto.request.RegisterRequest;
 import com.gorkem.vehicle_inspector.dto.response.UserResponse;
 import com.gorkem.vehicle_inspector.service.AuthService;
+import com.gorkem.vehicle_inspector.dto.request.LoginRequest;
+import com.gorkem.vehicle_inspector.dto.response.AuthResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,5 +29,14 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request
+    ) {
+        return ResponseEntity.ok(
+                authService.login(request)
+        );
     }
 }
