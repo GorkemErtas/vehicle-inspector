@@ -12,6 +12,7 @@ import com.gorkem.vehicle_inspector.repository.UserRepository;
 import com.gorkem.vehicle_inspector.repository.VehicleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,15 +22,18 @@ public class DamageInspectionService {
     private final DamageInspectionRepository inspectionRepository;
     private final VehicleRepository vehicleRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
     public DamageInspectionService(
             DamageInspectionRepository inspectionRepository,
             VehicleRepository vehicleRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            FileStorageService fileStorageService
     ) {
         this.inspectionRepository = inspectionRepository;
         this.vehicleRepository = vehicleRepository;
         this.userRepository = userRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     @Transactional
@@ -91,6 +95,42 @@ public class DamageInspectionService {
                         );
 
         return DamageInspectionMapper.toResponse(inspection);
+    }
+
+    @Transactional
+    public DamageInspectionResponse uploadInspectionImage(
+            Long inspectionId,
+            MultipartFile image,
+            String authenticatedEmail
+    ) {
+        User user = findUserByEmail(authenticatedEmail);
+
+        DamageInspection inspection =
+                inspectionRepository
+                        .findByIdAndUserId(
+                                inspectionId,
+                                user.getId()
+                        )
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Hasar incelemesi bulunamadı. ID: "
+                                                + inspectionId
+                                )
+                        );
+
+        String storedFilename =
+                fileStorageService.storeImage(image);
+
+        inspection.setImagePath(
+                "/uploads/" + storedFilename
+        );
+
+        DamageInspection updatedInspection =
+                inspectionRepository.save(inspection);
+
+        return DamageInspectionMapper.toResponse(
+                updatedInspection
+        );
     }
 
     private User findUserByEmail(String email) {

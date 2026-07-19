@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -61,5 +63,25 @@ public class DamageInspectionController {
                         authentication.getName()
                 )
         );
+    }
+
+    @PostMapping(
+            value = "/{inspectionId}/image",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<DamageInspectionResponse>
+    uploadInspectionImage(
+            @PathVariable Long inspectionId,
+            @RequestPart("image") MultipartFile image,
+            Authentication authentication
+    ) {
+        DamageInspectionResponse response =
+                inspectionService.uploadInspectionImage(
+                        inspectionId,
+                        image,
+                        authentication.getName()
+                );
+
+        return ResponseEntity.ok(response);
     }
 }
