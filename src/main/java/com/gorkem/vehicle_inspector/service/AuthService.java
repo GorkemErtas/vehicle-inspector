@@ -88,6 +88,19 @@ public class AuthService {
         );
     }
 
+    public UserResponse getCurrentUser(String email) {
+        String normalizedEmail = normalizeEmail(email);
+
+        User user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Kullanıcı bulunamadı."
+                        )
+                );
+
+        return UserMapper.toResponse(user);
+    }
+
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase();
     }
