@@ -13,7 +13,12 @@ import com.gorkem.vehicle_inspector.repository.VehicleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.gorkem.vehicle_inspector.client.AiAnalysisClient;
+import com.gorkem.vehicle_inspector.dto.response.AiAnalysisResponse;
+import com.gorkem.vehicle_inspector.exception.AiServiceException;
 
+import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -23,17 +28,20 @@ public class DamageInspectionService {
     private final VehicleRepository vehicleRepository;
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
+    private final AiAnalysisClient aiAnalysisClient;
 
     public DamageInspectionService(
             DamageInspectionRepository inspectionRepository,
             VehicleRepository vehicleRepository,
             UserRepository userRepository,
-            FileStorageService fileStorageService
+            FileStorageService fileStorageService,
+            AiAnalysisClient aiAnalysisClient
     ) {
         this.inspectionRepository = inspectionRepository;
         this.vehicleRepository = vehicleRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
+        this.aiAnalysisClient = aiAnalysisClient;
     }
 
     @Transactional
@@ -151,5 +159,87 @@ public class DamageInspectionService {
                                         + vehicleId
                         )
                 );
+    }
+
+    @Transactional
+    public DamageInspectionResponse analyzeInspection(
+            Long inspectionId,
+            String authenticatedEmail
+    ) {
+        User user = findUserByEmail(authenticatedEmail);
+
+        DamageInspection inspection =
+                inspectionRepository
+                        .findByIdAndUserId(
+                                inspectionId,
+                                user.getId()
+                        )
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Hasar incelemesi bulunamadı. ID: "
+                                                + inspectionId
+                                )
+                        );
+
+        if (inspection.getImagePath() == null
+                || inspection.getImagePath().isBlank()) {
+            throw new IllegalStateException(
+                    "Analizden önce fotoğraf yüklenmelidir."
+            );
+        }
+
+        inspection.setStatus(InspectionStatus.PROCESSING);
+        inspectionRepository.save(inspection);
+
+        try {
+            Path storedImagePath =
+                    fileStorageService.resolveStoredFile(
+                            inspection.getImagePath()
+                    );
+
+            AiAnalysisResponse aiResponse =
+                    aiAnalysisClient.analyze(storedImagePath);
+
+            inspection.setDamageType(
+                    aiResponse.getDamageType()
+            );
+            inspection.setDamageSeverity(
+                    aiResponse.getDamageSeverity()
+            );
+            inspection.setConfidenceScore(
+                    aiResponse.getConfidenceScore()
+            );
+            inspection.setEstimatedCost(
+                    aiResponse.getEstimatedCost()
+            );
+            inspection.setAnalysisMessage(
+                    aiResponse.getAnalysisMessage()
+            );
+            inspection.setStatus(
+                    InspectionStatus.COMPLETED
+            );
+            inspection.setCompletedAt(
+                    LocalDateTime.now()
+            );
+
+        } catch (RuntimeException exception) {
+
+            inspection.setStatus(InspectionStatus.FAILED);
+            inspection.setAnalysisMessage(
+                    exception.getMessage()
+            );
+
+            DamageInspection failedInspection =
+                    inspectionRepository.save(inspection);
+
+            return DamageInspectionMapper.toResponse(failedInspection);
+        }
+
+        DamageInspection savedInspection =
+                inspectionRepository.save(inspection);
+
+        return DamageInspectionMapper.toResponse(
+                savedInspection
+        );
     }
 }

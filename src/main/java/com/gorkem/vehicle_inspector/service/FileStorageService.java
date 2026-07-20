@@ -114,4 +114,34 @@ public class FileStorageService {
 
         return filename.substring(dotIndex).toLowerCase();
     }
+
+    public Path resolveStoredFile(String imagePath) {
+        if (imagePath == null || imagePath.isBlank()) {
+            throw new FileStorageException(
+                    "İncelemeye ait fotoğraf bulunamadı."
+            );
+        }
+
+        String filename = Path.of(imagePath)
+                .getFileName()
+                .toString();
+
+        Path resolvedPath = uploadDirectory
+                .resolve(filename)
+                .normalize();
+
+        if (!resolvedPath.startsWith(uploadDirectory)) {
+            throw new FileStorageException(
+                    "Geçersiz fotoğraf yolu."
+            );
+        }
+
+        if (!Files.exists(resolvedPath)) {
+            throw new FileStorageException(
+                    "Fotoğraf dosyası bulunamadı."
+            );
+        }
+
+        return resolvedPath;
+    }
 }

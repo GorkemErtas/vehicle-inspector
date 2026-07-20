@@ -84,4 +84,19 @@ public class DamageInspectionController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/{inspectionId}/analyze")
+    public ResponseEntity<DamageInspectionResponse>
+    analyzeInspection(
+            @PathVariable Long inspectionId,
+            Authentication authentication
+    ) {
+        DamageInspectionResponse response =
+                inspectionService.analyzeInspection(
+                        inspectionId,
+                        authentication.getName()
+                );
+
+        return ResponseEntity.ok(response);
+    }
 }
