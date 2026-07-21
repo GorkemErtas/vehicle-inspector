@@ -1,23 +1,5 @@
 # 🚗 Vehicle Inspector
 
-> **🚧 Project Status: Under Active Development**
->
-> This project is currently under active development. New features, improvements, and AI capabilities are being implemented continuously.
->
-> **Current Progress**
->
-> - ✅ JWT Authentication
-> - ✅ User Management
-> - ✅ Vehicle Management
-> - ✅ Vehicle Inspection Management
-> - ✅ Image Upload
-> - ✅ AI Damage Analysis
-> - 🔄 Repair Cost Estimation Engine
-> - 🔄 React Frontend
-> - 🔄 Docker Support
-> - 🔄 CI/CD Pipeline
-> - ⏳ Cloud Deployment
-
 An AI-powered vehicle damage inspection system that automatically analyzes vehicle images, detects visible damage, and estimates repair recommendations using a hybrid Spring Boot + FastAPI architecture.
 
 ## 📌 Overview
