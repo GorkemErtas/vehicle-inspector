@@ -108,6 +108,7 @@ The project follows a microservice-style architecture:
 ## Tools
 
 - IntelliJ IDEA
+- VS Code
 - Postman
 - Git
 - GitHub
