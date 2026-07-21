@@ -2,7 +2,6 @@ package com.gorkem.vehicle_inspector.entity;
 
 import jakarta.persistence.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -44,18 +43,23 @@ public class DamageInspection {
     @Column(name = "damage_severity", length = 30)
     private DamageSeverity damageSeverity;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "damage_type", length = 100)
-    private String damageType;
+    private DamageType damageType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "vehicle_part", length = 50)
+    private VehiclePart vehiclePart;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "recommended_action", length = 50)
+    private RepairAction recommendedAction;
+
+    @Column(name = "part_replacement_required")
+    private Boolean partReplacementRequired;
 
     @Column(name = "confidence_score")
     private Double confidenceScore;
-
-    @Column(
-            name = "estimated_cost",
-            precision = 12,
-            scale = 2
-    )
-    private BigDecimal estimatedCost;
 
     @Column(name = "analysis_message", length = 1000)
     private String analysisMessage;
@@ -112,16 +116,24 @@ public class DamageInspection {
         return damageSeverity;
     }
 
-    public String getDamageType() {
+    public DamageType getDamageType() {
         return damageType;
+    }
+
+    public VehiclePart getVehiclePart() {
+        return vehiclePart;
+    }
+
+    public RepairAction getRecommendedAction() {
+        return recommendedAction;
+    }
+
+    public Boolean getPartReplacementRequired() {
+        return partReplacementRequired;
     }
 
     public Double getConfidenceScore() {
         return confidenceScore;
-    }
-
-    public BigDecimal getEstimatedCost() {
-        return estimatedCost;
     }
 
     public String getAnalysisMessage() {
@@ -158,16 +170,29 @@ public class DamageInspection {
         this.damageSeverity = damageSeverity;
     }
 
-    public void setDamageType(String damageType) {
+    public void setDamageType(DamageType damageType) {
         this.damageType = damageType;
+    }
+
+    public void setVehiclePart(VehiclePart vehiclePart) {
+        this.vehiclePart = vehiclePart;
+    }
+
+    public void setRecommendedAction(
+            RepairAction recommendedAction
+    ) {
+        this.recommendedAction = recommendedAction;
+    }
+
+    public void setPartReplacementRequired(
+            Boolean partReplacementRequired
+    ) {
+        this.partReplacementRequired =
+                partReplacementRequired;
     }
 
     public void setConfidenceScore(Double confidenceScore) {
         this.confidenceScore = confidenceScore;
-    }
-
-    public void setEstimatedCost(BigDecimal estimatedCost) {
-        this.estimatedCost = estimatedCost;
     }
 
     public void setAnalysisMessage(String analysisMessage) {

@@ -206,11 +206,17 @@ public class DamageInspectionService {
             inspection.setDamageSeverity(
                     aiResponse.getDamageSeverity()
             );
+            inspection.setVehiclePart(
+                    aiResponse.getVehiclePart()
+            );
+            inspection.setRecommendedAction(
+                    aiResponse.getRecommendedAction()
+            );
+            inspection.setPartReplacementRequired(
+                    aiResponse.getPartReplacementRequired()
+            );
             inspection.setConfidenceScore(
                     aiResponse.getConfidenceScore()
-            );
-            inspection.setEstimatedCost(
-                    aiResponse.getEstimatedCost()
             );
             inspection.setAnalysisMessage(
                     aiResponse.getAnalysisMessage()

@@ -20,8 +20,10 @@ public final class DamageInspectionMapper {
                 inspection.getStatus(),
                 inspection.getDamageSeverity(),
                 inspection.getDamageType(),
+                inspection.getVehiclePart(),
+                inspection.getRecommendedAction(),
+                inspection.getPartReplacementRequired(),
                 inspection.getConfidenceScore(),
-                inspection.getEstimatedCost(),
                 inspection.getAnalysisMessage(),
                 inspection.getCreatedAt(),
                 inspection.getCompletedAt()

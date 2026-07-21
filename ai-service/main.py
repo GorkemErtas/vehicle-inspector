@@ -1,11 +1,10 @@
-from decimal import Decimal
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
 app = FastAPI(
     title="Vehicle Damage Analysis API",
-    version="1.0.0",
+    version="1.1.0",
 )
 
 ALLOWED_CONTENT_TYPES = {
@@ -39,45 +38,81 @@ async def analyze_damage(image: UploadFile = File(...)):
             detail="Uploaded image cannot be empty.",
         )
 
-    filename = Path(image.filename or "vehicle.jpg").name.lower()
+    filename = Path(
+        image.filename or "vehicle.jpg"
+    ).name.lower()
 
-    # Şimdilik gerçek model yerine deterministik demo sonucu.
-    # Aynı dosya adı her analizde benzer sonuç üretir.
+    # Şimdilik gerçek AI modeli yerine deterministik demo sonucu.
+    # Aynı dosya, her analizde aynı sonuca yakın bir çıktı üretir.
     score = sum(file_content[:1000]) + len(filename)
-    result_type = score % 4
+    result_type = score % 5
 
     if result_type == 0:
         damage_type = "SCRATCH"
         severity = "MINOR"
+        vehicle_part = "FRONT_BUMPER"
+        recommended_action = "POLISHING"
+        part_replacement_required = False
         confidence_score = 0.87
-        estimated_cost = Decimal("3500.00")
-        message = "Araç yüzeyinde hafif çizik tespit edildi."
+        message = (
+            "Ön tamponda yüzeysel çizik tespit edildi. "
+            "Pasta-cila işlemi yeterli olabilir."
+        )
 
     elif result_type == 1:
-        damage_type = "DENT"
+        damage_type = "PAINT_DAMAGE"
         severity = "MODERATE"
-        confidence_score = 0.91
-        estimated_cost = Decimal("8500.00")
-        message = "Kaporta üzerinde orta seviyede göçük tespit edildi."
+        vehicle_part = "FRONT_LEFT_DOOR"
+        recommended_action = "FULL_PAINTING"
+        part_replacement_required = False
+        confidence_score = 0.89
+        message = (
+            "Sol ön kapıda orta seviyede boya hasarı tespit edildi. "
+            "Parçanın boyanması önerilmektedir."
+        )
 
     elif result_type == 2:
-        damage_type = "BUMPER_DAMAGE"
+        damage_type = "DENT"
+        severity = "MODERATE"
+        vehicle_part = "FRONT_RIGHT_FENDER"
+        recommended_action = "PAINTLESS_DENT_REPAIR"
+        part_replacement_required = False
+        confidence_score = 0.91
+        message = (
+            "Sağ ön çamurlukta orta seviyede göçük tespit edildi. "
+            "Boyasız göçük düzeltme işlemi uygulanabilir."
+        )
+
+    elif result_type == 3:
+        damage_type = "CRACK"
         severity = "SEVERE"
+        vehicle_part = "FRONT_BUMPER"
+        recommended_action = "PART_REPLACEMENT"
+        part_replacement_required = True
         confidence_score = 0.94
-        estimated_cost = Decimal("18000.00")
-        message = "Tampon bölgesinde ciddi hasar tespit edildi."
+        message = (
+            "Ön tamponda ağır çatlak tespit edildi. "
+            "Parça değişimi önerilmektedir."
+        )
 
     else:
         damage_type = "NO_VISIBLE_DAMAGE"
         severity = "NONE"
+        vehicle_part = "UNKNOWN"
+        recommended_action = "NO_ACTION"
+        part_replacement_required = False
         confidence_score = 0.82
-        estimated_cost = Decimal("0.00")
-        message = "Belirgin bir araç hasarı tespit edilmedi."
+        message = (
+            "Belirgin bir araç hasarı tespit edilmedi. "
+            "Herhangi bir onarım işlemi önerilmemektedir."
+        )
 
     return {
         "damageType": damage_type,
         "damageSeverity": severity,
+        "vehiclePart": vehicle_part,
+        "recommendedAction": recommended_action,
+        "partReplacementRequired": part_replacement_required,
         "confidenceScore": confidence_score,
-        "estimatedCost": estimated_cost,
         "analysisMessage": message,
     }

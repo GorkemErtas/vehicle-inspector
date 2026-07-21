@@ -1,0 +1,17 @@
+package com.gorkem.vehicle_inspector.entity;
+
+public enum RepairAction {
+    NO_ACTION,
+    POLISHING,
+    PAINT_TOUCH_UP,
+    FULL_PAINTING,
+    PAINTLESS_DENT_REPAIR,
+    DENT_REPAIR,
+    PLASTIC_REPAIR,
+    PART_REPAIR,
+    PART_REPLACEMENT,
+    GLASS_REPAIR,
+    GLASS_REPLACEMENT,
+    HEADLIGHT_REPAIR,
+    HEADLIGHT_REPLACEMENT
+}

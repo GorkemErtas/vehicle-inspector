@@ -1,9 +1,11 @@
 package com.gorkem.vehicle_inspector.dto.response;
 
 import com.gorkem.vehicle_inspector.entity.DamageSeverity;
+import com.gorkem.vehicle_inspector.entity.DamageType;
 import com.gorkem.vehicle_inspector.entity.InspectionStatus;
+import com.gorkem.vehicle_inspector.entity.RepairAction;
+import com.gorkem.vehicle_inspector.entity.VehiclePart;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class DamageInspectionResponse {
@@ -15,9 +17,11 @@ public class DamageInspectionResponse {
     private final String imagePath;
     private final InspectionStatus status;
     private final DamageSeverity damageSeverity;
-    private final String damageType;
+    private final DamageType damageType;
+    private final VehiclePart vehiclePart;
+    private final RepairAction recommendedAction;
+    private final Boolean partReplacementRequired;
     private final Double confidenceScore;
-    private final BigDecimal estimatedCost;
     private final String analysisMessage;
     private final LocalDateTime createdAt;
     private final LocalDateTime completedAt;
@@ -30,9 +34,11 @@ public class DamageInspectionResponse {
             String imagePath,
             InspectionStatus status,
             DamageSeverity damageSeverity,
-            String damageType,
+            DamageType damageType,
+            VehiclePart vehiclePart,
+            RepairAction recommendedAction,
+            Boolean partReplacementRequired,
             Double confidenceScore,
-            BigDecimal estimatedCost,
             String analysisMessage,
             LocalDateTime createdAt,
             LocalDateTime completedAt
@@ -45,8 +51,10 @@ public class DamageInspectionResponse {
         this.status = status;
         this.damageSeverity = damageSeverity;
         this.damageType = damageType;
+        this.vehiclePart = vehiclePart;
+        this.recommendedAction = recommendedAction;
+        this.partReplacementRequired = partReplacementRequired;
         this.confidenceScore = confidenceScore;
-        this.estimatedCost = estimatedCost;
         this.analysisMessage = analysisMessage;
         this.createdAt = createdAt;
         this.completedAt = completedAt;
@@ -80,16 +88,24 @@ public class DamageInspectionResponse {
         return damageSeverity;
     }
 
-    public String getDamageType() {
+    public DamageType getDamageType() {
         return damageType;
+    }
+
+    public VehiclePart getVehiclePart() {
+        return vehiclePart;
+    }
+
+    public RepairAction getRecommendedAction() {
+        return recommendedAction;
+    }
+
+    public Boolean getPartReplacementRequired() {
+        return partReplacementRequired;
     }
 
     public Double getConfidenceScore() {
         return confidenceScore;
-    }
-
-    public BigDecimal getEstimatedCost() {
-        return estimatedCost;
     }
 
     public String getAnalysisMessage() {
