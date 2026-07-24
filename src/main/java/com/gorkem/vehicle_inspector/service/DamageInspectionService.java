@@ -50,7 +50,11 @@ public class DamageInspectionService {
             String authenticatedEmail
     ) {
         User user = findUserByEmail(authenticatedEmail);
-        Vehicle vehicle = findVehicleById(vehicleId);
+        Vehicle vehicle =
+                findVehicleByIdAndUserId(
+                        vehicleId,
+                        user.getId()
+                );
 
         DamageInspection inspection =
                 new DamageInspection(
@@ -151,8 +155,12 @@ public class DamageInspectionService {
                 );
     }
 
-    private Vehicle findVehicleById(Long vehicleId) {
-        return vehicleRepository.findById(vehicleId)
+    private Vehicle findVehicleByIdAndUserId(
+            Long vehicleId,
+            Long userId
+    ) {
+        return vehicleRepository
+                .findByIdAndUserId(vehicleId, userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Araç bulunamadı. ID: "

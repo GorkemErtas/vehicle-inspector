@@ -15,7 +15,8 @@ import java.math.BigDecimal;
                                 "model",
                                 "model_year",
                                 "vehicle_part",
-                                "repair_action"
+                                "repair_action",
+                                "damage_severity"
                         }
                 )
         },
@@ -23,7 +24,8 @@ import java.math.BigDecimal;
                 @Index(
                         name = "idx_repair_price_lookup",
                         columnList =
-                                "brand, model, model_year, vehicle_part, repair_action"
+                                "brand, model, model_year, vehicle_part, " +
+                                        "repair_action, damage_severity, active"
                 )
         }
 )
@@ -58,6 +60,14 @@ public class RepairPrice {
     )
     private RepairAction repairAction;
 
+    @Enumerated(EnumType.STRING)
+    @Column(
+            name = "damage_severity",
+            nullable = false,
+            length = 30
+    )
+    private DamageSeverity damageSeverity;
+
     @Column(
             name = "minimum_price",
             nullable = false,
@@ -82,10 +92,6 @@ public class RepairPrice {
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getBrand() {
@@ -128,11 +134,23 @@ public class RepairPrice {
         this.repairAction = repairAction;
     }
 
+    public DamageSeverity getDamageSeverity() {
+        return damageSeverity;
+    }
+
+    public void setDamageSeverity(
+            DamageSeverity damageSeverity
+    ) {
+        this.damageSeverity = damageSeverity;
+    }
+
     public BigDecimal getMinimumPrice() {
         return minimumPrice;
     }
 
-    public void setMinimumPrice(BigDecimal minimumPrice) {
+    public void setMinimumPrice(
+            BigDecimal minimumPrice
+    ) {
         this.minimumPrice = minimumPrice;
     }
 
@@ -140,7 +158,9 @@ public class RepairPrice {
         return maximumPrice;
     }
 
-    public void setMaximumPrice(BigDecimal maximumPrice) {
+    public void setMaximumPrice(
+            BigDecimal maximumPrice
+    ) {
         this.maximumPrice = maximumPrice;
     }
 

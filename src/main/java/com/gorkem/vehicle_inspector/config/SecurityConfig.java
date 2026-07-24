@@ -68,6 +68,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/login",
                                 "/uploads/**"
                         ).permitAll()
+                        .requestMatchers("/api/v1/admin/**")
+                        .hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
 

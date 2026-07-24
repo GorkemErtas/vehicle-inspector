@@ -1,5 +1,6 @@
 package com.gorkem.vehicle_inspector.repository;
 
+import com.gorkem.vehicle_inspector.entity.DamageSeverity;
 import com.gorkem.vehicle_inspector.entity.RepairAction;
 import com.gorkem.vehicle_inspector.entity.RepairPrice;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
@@ -12,21 +13,35 @@ public interface RepairPriceRepository
         extends JpaRepository<RepairPrice, Long> {
 
     Optional<RepairPrice>
-    findByBrandIgnoreCaseAndModelIgnoreCaseAndModelYearAndVehiclePartAndRepairActionAndActiveTrue(
+    findByBrandIgnoreCaseAndModelIgnoreCaseAndModelYearAndVehiclePartAndRepairActionAndDamageSeverityAndActiveTrue(
             String brand,
             String model,
             Integer modelYear,
             VehiclePart vehiclePart,
-            RepairAction repairAction
+            RepairAction repairAction,
+            DamageSeverity damageSeverity
     );
 
-    List<RepairPrice> findAllByActiveTrue();
-
-    boolean existsByBrandIgnoreCaseAndModelIgnoreCaseAndModelYearAndVehiclePartAndRepairAction(
+    boolean existsByBrandIgnoreCaseAndModelIgnoreCaseAndModelYearAndVehiclePartAndRepairActionAndDamageSeverity(
             String brand,
             String model,
             Integer modelYear,
             VehiclePart vehiclePart,
-            RepairAction repairAction
+            RepairAction repairAction,
+            DamageSeverity damageSeverity
     );
+
+    boolean existsByBrandIgnoreCaseAndModelIgnoreCaseAndModelYearAndVehiclePartAndRepairActionAndDamageSeverityAndIdNot(
+            String brand,
+            String model,
+            Integer modelYear,
+            VehiclePart vehiclePart,
+            RepairAction repairAction,
+            DamageSeverity damageSeverity,
+            Long id
+    );
+
+    List<RepairPrice> findAllByOrderByBrandAscModelAscModelYearDesc();
+
+    List<RepairPrice> findAllByActiveTrueOrderByBrandAscModelAsc();
 }

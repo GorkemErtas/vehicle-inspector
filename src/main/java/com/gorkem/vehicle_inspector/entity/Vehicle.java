@@ -25,7 +25,17 @@ public class Vehicle {
     @Column(nullable = false)
     private Integer mileage;
 
-    public Vehicle() {
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false,
+            foreignKey = @ForeignKey(
+                    name = "fk_vehicle_user"
+            )
+    )
+    private User user;
+
+    protected Vehicle() {
     }
 
     public Vehicle(
@@ -33,13 +43,15 @@ public class Vehicle {
             String brand,
             String model,
             Integer modelYear,
-            Integer mileage
+            Integer mileage,
+            User user
     ) {
         this.plate = plate;
         this.brand = brand;
         this.model = model;
         this.modelYear = modelYear;
         this.mileage = mileage;
+        this.user = user;
     }
 
     public Long getId() {
@@ -50,39 +62,47 @@ public class Vehicle {
         return plate;
     }
 
-    public void setPlate(String plate) {
-        this.plate = plate;
-    }
-
     public String getBrand() {
         return brand;
-    }
-
-    public void setBrand(String brand) {
-        this.brand = brand;
     }
 
     public String getModel() {
         return model;
     }
 
-    public void setModel(String model) {
-        this.model = model;
-    }
-
     public Integer getModelYear() {
         return modelYear;
-    }
-
-    public void setModelYear(Integer modelYear) {
-        this.modelYear = modelYear;
     }
 
     public Integer getMileage() {
         return mileage;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setPlate(String plate) {
+        this.plate = plate;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
+    public void setModelYear(Integer modelYear) {
+        this.modelYear = modelYear;
+    }
+
     public void setMileage(Integer mileage) {
         this.mileage = mileage;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
