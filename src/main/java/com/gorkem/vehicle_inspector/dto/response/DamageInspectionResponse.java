@@ -5,6 +5,7 @@ import com.gorkem.vehicle_inspector.entity.DamageType;
 import com.gorkem.vehicle_inspector.entity.InspectionStatus;
 import com.gorkem.vehicle_inspector.entity.RepairAction;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
+import java.math.BigDecimal;
 
 import java.time.LocalDateTime;
 
@@ -25,6 +26,12 @@ public class DamageInspectionResponse {
     private final String analysisMessage;
     private final LocalDateTime createdAt;
     private final LocalDateTime completedAt;
+    private final BigDecimal estimatedMinimumPrice;
+    private final BigDecimal estimatedMaximumPrice;
+    private final String priceCurrency;
+    private final LocalDateTime priceCalculatedAt;
+    private final Boolean priceAvailable;
+    private final String priceMessage;
 
     public DamageInspectionResponse(
             Long id,
@@ -41,7 +48,13 @@ public class DamageInspectionResponse {
             Double confidenceScore,
             String analysisMessage,
             LocalDateTime createdAt,
-            LocalDateTime completedAt
+            LocalDateTime completedAt,
+            BigDecimal estimatedMinimumPrice,
+            BigDecimal estimatedMaximumPrice,
+            String priceCurrency,
+            LocalDateTime priceCalculatedAt,
+            Boolean priceAvailable,
+            String priceMessage
     ) {
         this.id = id;
         this.vehicleId = vehicleId;
@@ -58,6 +71,12 @@ public class DamageInspectionResponse {
         this.analysisMessage = analysisMessage;
         this.createdAt = createdAt;
         this.completedAt = completedAt;
+        this.estimatedMinimumPrice = estimatedMinimumPrice;
+        this.estimatedMaximumPrice = estimatedMaximumPrice;
+        this.priceCurrency = priceCurrency;
+        this.priceCalculatedAt = priceCalculatedAt;
+        this.priceAvailable = priceAvailable;
+        this.priceMessage = priceMessage;
     }
 
     public Long getId() {
@@ -118,5 +137,29 @@ public class DamageInspectionResponse {
 
     public LocalDateTime getCompletedAt() {
         return completedAt;
+    }
+
+    public BigDecimal getEstimatedMinimumPrice() {
+        return estimatedMinimumPrice;
+    }
+
+    public BigDecimal getEstimatedMaximumPrice() {
+        return estimatedMaximumPrice;
+    }
+
+    public String getPriceCurrency() {
+        return priceCurrency;
+    }
+
+    public LocalDateTime getPriceCalculatedAt() {
+        return priceCalculatedAt;
+    }
+
+    public Boolean getPriceAvailable() {
+        return priceAvailable;
+    }
+
+    public String getPriceMessage() {
+        return priceMessage;
     }
 }

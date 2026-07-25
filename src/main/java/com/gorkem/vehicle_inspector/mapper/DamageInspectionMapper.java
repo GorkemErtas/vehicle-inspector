@@ -26,7 +26,13 @@ public final class DamageInspectionMapper {
                 inspection.getConfidenceScore(),
                 inspection.getAnalysisMessage(),
                 inspection.getCreatedAt(),
-                inspection.getCompletedAt()
+                inspection.getCompletedAt(),
+                inspection.getEstimatedMinimumPrice(),
+                inspection.getEstimatedMaximumPrice(),
+                inspection.getPriceCurrency(),
+                inspection.getPriceCalculatedAt(),
+                inspection.getPriceAvailable(),
+                inspection.getPriceMessage()
         );
     }
 }

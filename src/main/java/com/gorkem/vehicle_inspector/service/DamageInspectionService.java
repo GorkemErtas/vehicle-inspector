@@ -29,19 +29,22 @@ public class DamageInspectionService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final AiAnalysisClient aiAnalysisClient;
+    private final PriceEstimationService priceEstimationService;
 
     public DamageInspectionService(
             DamageInspectionRepository inspectionRepository,
             VehicleRepository vehicleRepository,
             UserRepository userRepository,
             FileStorageService fileStorageService,
-            AiAnalysisClient aiAnalysisClient
+            AiAnalysisClient aiAnalysisClient,
+            PriceEstimationService priceEstimationService
     ) {
         this.inspectionRepository = inspectionRepository;
         this.vehicleRepository = vehicleRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.aiAnalysisClient = aiAnalysisClient;
+        this.priceEstimationService = priceEstimationService;
     }
 
     @Transactional
@@ -229,6 +232,45 @@ public class DamageInspectionService {
             inspection.setAnalysisMessage(
                     aiResponse.getAnalysisMessage()
             );
+
+            priceEstimationService
+                    .findMatchingPrice(
+                            inspection.getVehicle(),
+                            inspection.getVehiclePart(),
+                            inspection.getRecommendedAction(),
+                            inspection.getDamageSeverity()
+                    )
+                    .ifPresentOrElse(
+                            repairPrice -> {
+                                inspection.setEstimatedMinimumPrice(
+                                        repairPrice.getMinimumPrice()
+                                );
+                                inspection.setEstimatedMaximumPrice(
+                                        repairPrice.getMaximumPrice()
+                                );
+                                inspection.setPriceCurrency("TRY");
+                                inspection.setPriceCalculatedAt(
+                                        LocalDateTime.now()
+                                );
+                                inspection.setPriceAvailable(true);
+                                inspection.setPriceMessage(
+                                        "Tahmini onarım fiyatı başarıyla hesaplandı."
+                                );
+                            },
+                            () -> {
+                                inspection.setEstimatedMinimumPrice(null);
+                                inspection.setEstimatedMaximumPrice(null);
+                                inspection.setPriceCurrency("TRY");
+                                inspection.setPriceCalculatedAt(
+                                        LocalDateTime.now()
+                                );
+                                inspection.setPriceAvailable(false);
+                                inspection.setPriceMessage(
+                                        "Bu araç, parça, işlem ve hasar derecesi için güncel fiyat kaydı bulunamadı."
+                                );
+                            }
+                    );
+
             inspection.setStatus(
                     InspectionStatus.COMPLETED
             );

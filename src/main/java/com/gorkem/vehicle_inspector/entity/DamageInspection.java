@@ -3,6 +3,7 @@ package com.gorkem.vehicle_inspector.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "damage_inspections")
@@ -73,6 +74,38 @@ public class DamageInspection {
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    @Column(
+            name = "estimated_minimum_price",
+            precision = 12,
+            scale = 2
+    )
+    private BigDecimal estimatedMinimumPrice;
+
+    @Column(
+            name = "estimated_maximum_price",
+            precision = 12,
+            scale = 2
+    )
+    private BigDecimal estimatedMaximumPrice;
+
+    @Column(
+            name = "price_currency",
+            length = 10
+    )
+    private String priceCurrency;
+
+    @Column(name = "price_calculated_at")
+    private LocalDateTime priceCalculatedAt;
+
+    @Column(name = "price_available")
+    private Boolean priceAvailable;
+
+    @Column(
+            name = "price_message",
+            length = 500
+    )
+    private String priceMessage;
 
     protected DamageInspection() {
     }
@@ -148,6 +181,30 @@ public class DamageInspection {
         return completedAt;
     }
 
+    public BigDecimal getEstimatedMinimumPrice() {
+        return estimatedMinimumPrice;
+    }
+
+    public BigDecimal getEstimatedMaximumPrice() {
+        return estimatedMaximumPrice;
+    }
+
+    public String getPriceCurrency() {
+        return priceCurrency;
+    }
+
+    public LocalDateTime getPriceCalculatedAt() {
+        return priceCalculatedAt;
+    }
+
+    public Boolean getPriceAvailable() {
+        return priceAvailable;
+    }
+
+    public String getPriceMessage() {
+        return priceMessage;
+    }
+
     public void setVehicle(Vehicle vehicle) {
         this.vehicle = vehicle;
     }
@@ -201,5 +258,35 @@ public class DamageInspection {
 
     public void setCompletedAt(LocalDateTime completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public void setEstimatedMinimumPrice(
+            BigDecimal estimatedMinimumPrice
+    ) {
+        this.estimatedMinimumPrice = estimatedMinimumPrice;
+    }
+
+    public void setEstimatedMaximumPrice(
+            BigDecimal estimatedMaximumPrice
+    ) {
+        this.estimatedMaximumPrice = estimatedMaximumPrice;
+    }
+
+    public void setPriceCurrency(String priceCurrency) {
+        this.priceCurrency = priceCurrency;
+    }
+
+    public void setPriceCalculatedAt(
+            LocalDateTime priceCalculatedAt
+    ) {
+        this.priceCalculatedAt = priceCalculatedAt;
+    }
+
+    public void setPriceAvailable(Boolean priceAvailable) {
+        this.priceAvailable = priceAvailable;
+    }
+
+    public void setPriceMessage(String priceMessage) {
+        this.priceMessage = priceMessage;
     }
 }
