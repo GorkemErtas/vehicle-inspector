@@ -11,7 +11,7 @@ from app.schemas import DamageAnalysisResponse
 
 app = FastAPI(
     title="Vehicle Damage Analysis API",
-    version="1.2.0",
+    version="1.3.0",
 )
 
 damage_analyzer = DamageAnalyzer()
@@ -39,7 +39,7 @@ def health_check():
     response_model=DamageAnalysisResponse,
 )
 async def analyze_damage(
-    image: UploadFile = File(...)
+    image: UploadFile = File(...),
 ) -> DamageAnalysisResponse:
     if image.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(
@@ -67,7 +67,20 @@ async def analyze_damage(
             ),
         )
 
-    return damage_analyzer.analyze(
-        file_content=file_content,
-        filename=image.filename or "vehicle.jpg",
-    )
+    try:
+        return damage_analyzer.analyze(
+            file_content=file_content,
+            filename=image.filename or "vehicle.jpg",
+        )
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        ) from exc
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="AI analysis could not be completed.",
+        ) from exc
