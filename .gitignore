@@ -1,3 +1,4 @@
+### Maven ###
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
@@ -14,10 +15,10 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
-*.iws
+.idea/
 *.iml
 *.ipr
+*.iws
 
 ### NetBeans ###
 /nbproject/private/
@@ -32,8 +33,22 @@ build/
 ### VS Code ###
 .vscode/
 
+### Application Files ###
 uploads/
 
+### Python ###
 ai-service/venv/
 ai-service/__pycache__/
-*.pyc
+*.py[cod]
+
+### YOLO ###
+ai-service/models/*.pt
+ai-service/training-runs/
+ai-service/prediction-runs/
+ai-service/yolo11n.pt
+
+### Dataset ###
+ai-service/datasets/
+
+### Test Images ###
+ai-service/test-images/
