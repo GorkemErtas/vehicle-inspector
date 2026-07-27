@@ -4,7 +4,9 @@ import com.gorkem.vehicle_inspector.entity.DamageSeverity;
 import com.gorkem.vehicle_inspector.entity.DamageType;
 import com.gorkem.vehicle_inspector.entity.RepairAction;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AiAnalysisResponse {
 
     private DamageType damageType;

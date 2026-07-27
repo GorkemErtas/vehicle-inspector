@@ -140,6 +140,24 @@ public class DamageInspectionService {
                 "/uploads/" + storedFilename
         );
 
+        inspection.setStatus(InspectionStatus.PENDING);
+
+        inspection.setDamageType(null);
+        inspection.setDamageSeverity(null);
+        inspection.setVehiclePart(null);
+        inspection.setRecommendedAction(null);
+        inspection.setPartReplacementRequired(null);
+        inspection.setConfidenceScore(null);
+        inspection.setAnalysisMessage(null);
+        inspection.setCompletedAt(null);
+
+        inspection.setEstimatedMinimumPrice(null);
+        inspection.setEstimatedMaximumPrice(null);
+        inspection.setPriceCurrency(null);
+        inspection.setPriceCalculatedAt(null);
+        inspection.setPriceAvailable(false);
+        inspection.setPriceMessage(null);
+
         DamageInspection updatedInspection =
                 inspectionRepository.save(inspection);
 

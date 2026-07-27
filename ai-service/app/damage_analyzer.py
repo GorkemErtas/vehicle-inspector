@@ -12,13 +12,19 @@ from app.schemas import (
 )
 
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+DEFAULT_VEHICLE_MODEL_PATH = PROJECT_ROOT / "yolo11n.pt"
+DEFAULT_DAMAGE_MODEL_PATH = PROJECT_ROOT / "models" / "best.pt"
+
+
 class DamageAnalyzer:
     """
-    Araç hasar analiz servisidir.
+    Araç ve hasar tespiti yapan analiz servisi.
 
-    Şimdilik genel amaçlı YOLO modeli kullanılır.
-    Daha sonra özel araç hasar modeli models/best.pt
-    dosyasından yüklenecektir.
+    Genel YOLO modeli araç tespiti için,
+    özel eğitilmiş YOLO modeli ise araç üzerindeki
+    hasarlı bölgeleri tespit etmek için kullanılır.
     """
 
     VEHICLE_LABELS = {
@@ -30,12 +36,42 @@ class DamageAnalyzer:
 
     def __init__(
         self,
-        model_path: str = "yolo11n.pt",
-        confidence_threshold: float = 0.40,
+        vehicle_model_path: str | Path = DEFAULT_VEHICLE_MODEL_PATH,
+        damage_model_path: str | Path = DEFAULT_DAMAGE_MODEL_PATH,
+        vehicle_confidence_threshold: float = 0.40,
+        damage_confidence_threshold: float = 0.08,
+        damage_iou_threshold: float = 0.20,
     ) -> None:
-        self.model_path = model_path
-        self.confidence_threshold = confidence_threshold
-        self.model = YOLO(model_path)
+        self.vehicle_model_path = Path(vehicle_model_path)
+        self.damage_model_path = Path(damage_model_path)
+
+        self.vehicle_confidence_threshold = (
+            vehicle_confidence_threshold
+        )
+        self.damage_confidence_threshold = (
+            damage_confidence_threshold
+        )
+        self.damage_iou_threshold = damage_iou_threshold
+
+        if not self.vehicle_model_path.exists():
+            raise FileNotFoundError(
+                "Vehicle detection model was not found: "
+                f"{self.vehicle_model_path}"
+            )
+
+        if not self.damage_model_path.exists():
+            raise FileNotFoundError(
+                "Damage detection model was not found: "
+                f"{self.damage_model_path}"
+            )
+
+        self.vehicle_model = YOLO(
+            str(self.vehicle_model_path)
+        )
+
+        self.damage_model = YOLO(
+            str(self.damage_model_path)
+        )
 
     def analyze(
         self,
@@ -48,54 +84,137 @@ class DamageAnalyzer:
 
         image = self._load_image(file_content)
 
-        results = self.model.predict(
+        vehicle_results = self.vehicle_model.predict(
             source=image,
-            conf=self.confidence_threshold,
+            conf=self.vehicle_confidence_threshold,
             verbose=False,
         )
 
-        detections = self._extract_detections(results)
+        damage_results = self.damage_model.predict(
+            source=image,
+            conf=self.damage_confidence_threshold,
+            iou=self.damage_iou_threshold,
+            max_det=10,
+            verbose=False,
+        )
+
+        vehicle_detections = self._extract_detections(
+            vehicle_results
+        )
 
         vehicle_detections = [
             detection
-            for detection in detections
+            for detection in vehicle_detections
             if detection.label in self.VEHICLE_LABELS
         ]
 
-        if not vehicle_detections:
-            return DamageAnalysisResponse(
-                damageType="UNKNOWN",
-                damageSeverity="NONE",
-                vehiclePart="UNKNOWN",
-                recommendedAction="MANUAL_INSPECTION",
-                partReplacementRequired=False,
-                confidenceScore=0.0,
-                analysisMessage=(
-                    f"{safe_filename} adlı görselde "
-                    "araç tespit edilemedi."
-                ),
-                detections=detections,
+        damage_detections = self._extract_detections(
+            damage_results
+        )
+
+        if not damage_detections:
+            return self._build_no_damage_response(
+                filename=safe_filename,
+                vehicle_detections=vehicle_detections,
             )
 
-        primary_vehicle = max(
-            vehicle_detections,
-            key=self._calculate_detection_area,
+        primary_damage = max(
+            damage_detections,
+            key=lambda detection: detection.confidence,
+        )
+
+        return self._build_damage_response(
+            filename=safe_filename,
+            primary_damage=primary_damage,
+            damage_detections=damage_detections,
+        )
+
+    def _build_damage_response(
+        self,
+        filename: str,
+        primary_damage: DetectedObject,
+        damage_detections: list[DetectedObject],
+    ) -> DamageAnalysisResponse:
+        damage_type = primary_damage.label.upper()
+
+        recommended_action = (
+            self._determine_recommended_action(
+                damage_type
+            )
+        )
+
+        replacement_required = (
+            self._determine_replacement_requirement(
+                damage_type
+            )
         )
 
         return DamageAnalysisResponse(
-            damageType="PENDING_CUSTOM_MODEL",
+            damageType=damage_type,
             damageSeverity="UNKNOWN",
             vehiclePart="UNKNOWN",
-            recommendedAction="MANUAL_INSPECTION",
-            partReplacementRequired=False,
-            confidenceScore=primary_vehicle.confidence,
+            recommendedAction=recommended_action,
+            partReplacementRequired=replacement_required,
+            confidenceScore=primary_damage.confidence,
             analysisMessage=(
-                "Araç tespit edildi. Hasar türü ve hasar "
-                "seviyesi, özel hasar modeli entegre "
-                "edildikten sonra belirlenecektir."
+                f"{filename} adlı görselde "
+                f"{len(damage_detections)} hasarlı bölge "
+                f"tespit edildi. En yüksek güven skoru: "
+                f"{primary_damage.confidence:.2f}."
             ),
-            detections=detections,
+            detections=damage_detections,
         )
+
+    def _build_no_damage_response(
+        self,
+        filename: str,
+        vehicle_detections: list[DetectedObject],
+    ) -> DamageAnalysisResponse:
+        if vehicle_detections:
+            message = (
+                f"{filename} adlı görselde araç tespit "
+                "edildi ancak güvenilir bir hasarlı alan "
+                "bulunamadı."
+            )
+        else:
+            message = (
+                f"{filename} adlı görselde güvenilir bir "
+                "araç veya hasarlı alan tespit edilemedi."
+            )
+
+        return DamageAnalysisResponse(
+            damageType="NO_VISIBLE_DAMAGE",
+            damageSeverity="NONE",
+            vehiclePart="UNKNOWN",
+            recommendedAction="NO_ACTION",
+            partReplacementRequired=False,
+            confidenceScore=0.0,
+            analysisMessage=message,
+            detections=[],
+        )
+
+    @staticmethod
+    def _determine_recommended_action(
+        damage_type: str,
+    ) -> str:
+        recommendations = {
+            "SCRATCH": "PAINT_TOUCH_UP",
+            "DENT": "DENT_REPAIR",
+            "CRACK": "PART_REPAIR",
+            "PAINT_DAMAGE": "FULL_PAINTING",
+            "BROKEN_PART": "PART_REPLACEMENT",
+        }
+
+        return recommendations.get(
+            damage_type,
+            "PART_REPAIR",
+        )
+
+    @staticmethod
+    def _determine_replacement_requirement(
+        damage_type: str,
+    ) -> bool:
+        return damage_type == "BROKEN_PART"
 
     @staticmethod
     def _load_image(
@@ -123,8 +242,8 @@ class DamageAnalyzer:
                 "Uploaded file is not a valid image."
             ) from exc
 
+    @staticmethod
     def _extract_detections(
-        self,
         results: list[Any],
     ) -> list[DetectedObject]:
         detections: list[DetectedObject] = []
@@ -153,7 +272,9 @@ class DamageAnalyzer:
 
                 detections.append(
                     DetectedObject(
-                        label=class_names[class_id],
+                        label=str(
+                            class_names[class_id]
+                        ),
                         confidence=confidence,
                         boundingBox=BoundingBox(
                             x1=round(
@@ -177,21 +298,3 @@ class DamageAnalyzer:
                 )
 
         return detections
-
-    @staticmethod
-    def _calculate_detection_area(
-        detection: DetectedObject,
-    ) -> float:
-        bounding_box = detection.boundingBox
-
-        width = max(
-            0.0,
-            bounding_box.x2 - bounding_box.x1,
-        )
-
-        height = max(
-            0.0,
-            bounding_box.y2 - bounding_box.y1,
-        )
-
-        return width * height
