@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "damage_inspections")
@@ -22,6 +24,14 @@ public class DamageInspection {
             )
     )
     private Vehicle vehicle;
+
+    @OneToMany(
+            mappedBy = "inspection",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<DamageDetection> detections =
+            new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
@@ -205,6 +215,10 @@ public class DamageInspection {
         return priceMessage;
     }
 
+    public List<DamageDetection> getDetections() {
+        return detections;
+    }
+
     public void setVehicle(Vehicle vehicle) {
         this.vehicle = vehicle;
     }
@@ -288,5 +302,16 @@ public class DamageInspection {
 
     public void setPriceMessage(String priceMessage) {
         this.priceMessage = priceMessage;
+    }
+
+    public void addDetection(
+            DamageDetection detection
+    ) {
+        detections.add(detection);
+        detection.setInspection(this);
+    }
+
+    public void clearDetections() {
+        detections.clear();
     }
 }

@@ -16,6 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.gorkem.vehicle_inspector.client.AiAnalysisClient;
 import com.gorkem.vehicle_inspector.dto.response.AiAnalysisResponse;
 import com.gorkem.vehicle_inspector.exception.AiServiceException;
+import com.gorkem.vehicle_inspector.dto.response.BoundingBoxResponse;
+import com.gorkem.vehicle_inspector.dto.response.DetectedObjectResponse;
+import com.gorkem.vehicle_inspector.entity.DamageDetection;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -140,6 +143,8 @@ public class DamageInspectionService {
                 "/uploads/" + storedFilename
         );
 
+        inspection.clearDetections();
+
         inspection.setStatus(InspectionStatus.PENDING);
 
         inspection.setDamageType(null);
@@ -228,6 +233,42 @@ public class DamageInspectionService {
 
             AiAnalysisResponse aiResponse =
                     aiAnalysisClient.analyze(storedImagePath);
+
+            inspection.clearDetections();
+
+            if (aiResponse.getDetections() != null) {
+                for (DetectedObjectResponse detectedObject
+                        : aiResponse.getDetections()) {
+
+                    if (detectedObject == null
+                            || detectedObject.getBoundingBox() == null) {
+                        continue;
+                    }
+
+                    BoundingBoxResponse boundingBox =
+                            detectedObject.getBoundingBox();
+
+                    if (boundingBox.getX1() == null
+                            || boundingBox.getY1() == null
+                            || boundingBox.getX2() == null
+                            || boundingBox.getY2() == null) {
+                        continue;
+                    }
+
+                    DamageDetection detection =
+                            new DamageDetection(
+                                    inspection,
+                                    detectedObject.getLabel(),
+                                    detectedObject.getConfidence(),
+                                    boundingBox.getX1(),
+                                    boundingBox.getY1(),
+                                    boundingBox.getX2(),
+                                    boundingBox.getY2()
+                            );
+
+                    inspection.addDetection(detection);
+                }
+            }
 
             inspection.setDamageType(
                     aiResponse.getDamageType()

@@ -5,6 +5,7 @@ import com.gorkem.vehicle_inspector.entity.DamageType;
 import com.gorkem.vehicle_inspector.entity.RepairAction;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AiAnalysisResponse {
@@ -22,6 +23,8 @@ public class AiAnalysisResponse {
     private Double confidenceScore;
 
     private String analysisMessage;
+
+    private List<DetectedObjectResponse> detections;
 
     public AiAnalysisResponse() {
     }
@@ -91,5 +94,15 @@ public class AiAnalysisResponse {
             String analysisMessage
     ) {
         this.analysisMessage = analysisMessage;
+    }
+
+    public List<DetectedObjectResponse> getDetections() {
+        return detections;
+    }
+
+    public void setDetections(
+            List<DetectedObjectResponse> detections
+    ) {
+        this.detections = detections;
     }
 }
