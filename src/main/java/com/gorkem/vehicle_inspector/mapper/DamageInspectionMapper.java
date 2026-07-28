@@ -2,6 +2,8 @@ package com.gorkem.vehicle_inspector.mapper;
 
 import com.gorkem.vehicle_inspector.dto.response.DamageInspectionResponse;
 import com.gorkem.vehicle_inspector.entity.DamageInspection;
+import com.gorkem.vehicle_inspector.dto.response.DamageDetectionResponse;
+import java.util.List;
 
 public final class DamageInspectionMapper {
 
@@ -11,6 +13,23 @@ public final class DamageInspectionMapper {
     public static DamageInspectionResponse toResponse(
             DamageInspection inspection
     ) {
+
+        List<DamageDetectionResponse> detections =
+                inspection.getDetections()
+                        .stream()
+                        .map(detection ->
+                                new DamageDetectionResponse(
+                                        detection.getId(),
+                                        detection.getLabel(),
+                                        detection.getConfidence(),
+                                        detection.getX1(),
+                                        detection.getY1(),
+                                        detection.getX2(),
+                                        detection.getY2()
+                                )
+                        )
+                        .toList();
+
         return new DamageInspectionResponse(
                 inspection.getId(),
                 inspection.getVehicle().getId(),
@@ -32,7 +51,8 @@ public final class DamageInspectionMapper {
                 inspection.getPriceCurrency(),
                 inspection.getPriceCalculatedAt(),
                 inspection.getPriceAvailable(),
-                inspection.getPriceMessage()
+                inspection.getPriceMessage(),
+                detections
         );
     }
 }

@@ -6,6 +6,7 @@ import com.gorkem.vehicle_inspector.entity.InspectionStatus;
 import com.gorkem.vehicle_inspector.entity.RepairAction;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
 import java.math.BigDecimal;
+import java.util.List;
 
 import java.time.LocalDateTime;
 
@@ -32,6 +33,7 @@ public class DamageInspectionResponse {
     private final LocalDateTime priceCalculatedAt;
     private final Boolean priceAvailable;
     private final String priceMessage;
+    private final List<DamageDetectionResponse> detections;
 
     public DamageInspectionResponse(
             Long id,
@@ -54,7 +56,8 @@ public class DamageInspectionResponse {
             String priceCurrency,
             LocalDateTime priceCalculatedAt,
             Boolean priceAvailable,
-            String priceMessage
+            String priceMessage,
+            List<DamageDetectionResponse> detections
     ) {
         this.id = id;
         this.vehicleId = vehicleId;
@@ -77,6 +80,7 @@ public class DamageInspectionResponse {
         this.priceCalculatedAt = priceCalculatedAt;
         this.priceAvailable = priceAvailable;
         this.priceMessage = priceMessage;
+        this.detections = detections;
     }
 
     public Long getId() {
@@ -161,5 +165,9 @@ public class DamageInspectionResponse {
 
     public String getPriceMessage() {
         return priceMessage;
+    }
+
+    public List<DamageDetectionResponse> getDetections() {
+        return detections;
     }
 }
