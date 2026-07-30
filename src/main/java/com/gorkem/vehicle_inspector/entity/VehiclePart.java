@@ -1,6 +1,7 @@
 package com.gorkem.vehicle_inspector.entity;
 
 public enum VehiclePart {
+    UNKNOWN,
 
     FRONT_BUMPER,
     REAR_BUMPER,

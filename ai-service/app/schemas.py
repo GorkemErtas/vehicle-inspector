@@ -25,4 +25,6 @@ class DamageAnalysisResponse(BaseModel):
         le=1.0,
     )
     analysisMessage: str
-    detections: list[DetectedObject] = []
+    detections: list[DetectedObject] = Field(
+        default_factory=list
+    )
