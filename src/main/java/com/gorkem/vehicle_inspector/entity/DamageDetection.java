@@ -29,6 +29,13 @@ public class DamageDetection {
     @Column(nullable = false)
     private Double confidence;
 
+    @Enumerated(EnumType.STRING)
+    @Column(
+            name = "affected_part",
+            length = 50
+    )
+    private VehiclePart affectedPart;
+
     @Column(nullable = false)
     private Double x1;
 
@@ -48,6 +55,7 @@ public class DamageDetection {
             DamageInspection inspection,
             String label,
             Double confidence,
+            VehiclePart affectedPart,
             Double x1,
             Double y1,
             Double x2,
@@ -56,6 +64,7 @@ public class DamageDetection {
         this.inspection = inspection;
         this.label = label;
         this.confidence = confidence;
+        this.affectedPart = affectedPart;
         this.x1 = x1;
         this.y1 = y1;
         this.x2 = x2;
@@ -94,6 +103,10 @@ public class DamageDetection {
         return y2;
     }
 
+    public VehiclePart getAffectedPart() {
+        return affectedPart;
+    }
+
     public void setInspection(
             DamageInspection inspection
     ) {
@@ -122,5 +135,11 @@ public class DamageDetection {
 
     public void setY2(Double y2) {
         this.y2 = y2;
+    }
+
+    public void setAffectedPart(
+            VehiclePart affectedPart
+    ) {
+        this.affectedPart = affectedPart;
     }
 }

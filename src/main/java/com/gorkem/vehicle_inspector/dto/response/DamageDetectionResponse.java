@@ -1,10 +1,13 @@
 package com.gorkem.vehicle_inspector.dto.response;
 
+import com.gorkem.vehicle_inspector.entity.VehiclePart;
+
 public class DamageDetectionResponse {
 
     private final Long id;
     private final String label;
     private final Double confidence;
+    private final VehiclePart affectedPart;
     private final Double x1;
     private final Double y1;
     private final Double x2;
@@ -14,6 +17,7 @@ public class DamageDetectionResponse {
             Long id,
             String label,
             Double confidence,
+            VehiclePart affectedPart,
             Double x1,
             Double y1,
             Double x2,
@@ -22,6 +26,7 @@ public class DamageDetectionResponse {
         this.id = id;
         this.label = label;
         this.confidence = confidence;
+        this.affectedPart = affectedPart;
         this.x1 = x1;
         this.y1 = y1;
         this.x2 = x2;
@@ -38,6 +43,10 @@ public class DamageDetectionResponse {
 
     public Double getConfidence() {
         return confidence;
+    }
+
+    public VehiclePart getAffectedPart() {
+        return affectedPart;
     }
 
     public Double getX1() {

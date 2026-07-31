@@ -26,6 +26,8 @@ public class AiAnalysisResponse {
 
     private List<DetectedObjectResponse> detections;
 
+    private List<VehiclePart> affectedParts;
+
     public AiAnalysisResponse() {
     }
 
@@ -104,5 +106,15 @@ public class AiAnalysisResponse {
             List<DetectedObjectResponse> detections
     ) {
         this.detections = detections;
+    }
+
+    public List<VehiclePart> getAffectedParts() {
+        return affectedParts;
+    }
+
+    public void setAffectedParts(
+            List<VehiclePart> affectedParts
+    ) {
+        this.affectedParts = affectedParts;
     }
 }

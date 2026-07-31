@@ -21,6 +21,7 @@ public class DamageInspectionResponse {
     private final DamageSeverity damageSeverity;
     private final DamageType damageType;
     private final VehiclePart vehiclePart;
+    private final List<VehiclePart> affectedParts;
     private final RepairAction recommendedAction;
     private final Boolean partReplacementRequired;
     private final Double confidenceScore;
@@ -45,6 +46,7 @@ public class DamageInspectionResponse {
             DamageSeverity damageSeverity,
             DamageType damageType,
             VehiclePart vehiclePart,
+            List<VehiclePart> affectedParts,
             RepairAction recommendedAction,
             Boolean partReplacementRequired,
             Double confidenceScore,
@@ -68,6 +70,7 @@ public class DamageInspectionResponse {
         this.damageSeverity = damageSeverity;
         this.damageType = damageType;
         this.vehiclePart = vehiclePart;
+        this.affectedParts = affectedParts;
         this.recommendedAction = recommendedAction;
         this.partReplacementRequired = partReplacementRequired;
         this.confidenceScore = confidenceScore;
@@ -117,6 +120,10 @@ public class DamageInspectionResponse {
 
     public VehiclePart getVehiclePart() {
         return vehiclePart;
+    }
+
+    public List<VehiclePart> getAffectedParts() {
+        return affectedParts;
     }
 
     public RepairAction getRecommendedAction() {

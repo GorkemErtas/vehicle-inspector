@@ -4,6 +4,8 @@ import com.gorkem.vehicle_inspector.dto.response.DamageInspectionResponse;
 import com.gorkem.vehicle_inspector.entity.DamageInspection;
 import com.gorkem.vehicle_inspector.dto.response.DamageDetectionResponse;
 import java.util.List;
+import com.gorkem.vehicle_inspector.entity.VehiclePart;
+import java.util.Objects;
 
 public final class DamageInspectionMapper {
 
@@ -22,12 +24,26 @@ public final class DamageInspectionMapper {
                                         detection.getId(),
                                         detection.getLabel(),
                                         detection.getConfidence(),
+                                        detection.getAffectedPart(),
                                         detection.getX1(),
                                         detection.getY1(),
                                         detection.getX2(),
                                         detection.getY2()
                                 )
                         )
+                        .toList();
+
+        List<VehiclePart> affectedParts =
+                inspection.getDetections()
+                        .stream()
+                        .map(detection ->
+                                detection.getAffectedPart()
+                        )
+                        .filter(Objects::nonNull)
+                        .filter(part ->
+                                part != VehiclePart.UNKNOWN
+                        )
+                        .distinct()
                         .toList();
 
         return new DamageInspectionResponse(
@@ -40,6 +56,7 @@ public final class DamageInspectionMapper {
                 inspection.getDamageSeverity(),
                 inspection.getDamageType(),
                 inspection.getVehiclePart(),
+                affectedParts,
                 inspection.getRecommendedAction(),
                 inspection.getPartReplacementRequired(),
                 inspection.getConfidenceScore(),

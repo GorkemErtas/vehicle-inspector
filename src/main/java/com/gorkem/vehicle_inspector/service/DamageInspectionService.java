@@ -259,6 +259,7 @@ public class DamageInspectionService {
                                     inspection,
                                     detectedObject.getLabel(),
                                     detectedObject.getConfidence(),
+                                    detectedObject.getAffectedPart(),
                                     boundingBox.getX1(),
                                     boundingBox.getY1(),
                                     boundingBox.getX2(),

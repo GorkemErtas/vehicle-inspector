@@ -70,8 +70,8 @@ class DamageAnalyzer:
             DEFAULT_VEHICLE_PART_MODEL_PATH
         ),
         vehicle_confidence_threshold: float = 0.40,
-        damage_confidence_threshold: float = 0.08,
-        damage_iou_threshold: float = 0.20,
+        damage_confidence_threshold: float = 0.25,
+        damage_iou_threshold: float = 0.45,
         vehicle_part_confidence_threshold: float = 0.25,
         minimum_part_overlap_ratio: float = 0.10,
     ) -> None:
@@ -148,7 +148,8 @@ class DamageAnalyzer:
             source=analysis_image,
             conf=self.damage_confidence_threshold,
             iou=self.damage_iou_threshold,
-            max_det=10,
+            max_det=20,
+            agnostic_nms=False,
             verbose=False,
         )
 
@@ -197,17 +198,43 @@ class DamageAnalyzer:
             key=lambda detection: detection.confidence,
         )
 
-        vehicle_part = self._match_damage_to_vehicle_part(
-            damage=primary_damage,
-            vehicle_parts=vehicle_part_detections,
+        matched_damage_detections = (
+            self._assign_parts_to_damage_detections(
+                damage_detections=damage_detections,
+                vehicle_part_detections=vehicle_part_detections,
+            )
+        )
+
+        vehicle_part = primary_damage.affectedPart
+
+        affected_parts = self._extract_affected_parts(
+            matched_damage_detections
         )
 
         return self._build_damage_response(
             filename=safe_filename,
             primary_damage=primary_damage,
-            damage_detections=damage_detections,
+            damage_detections=matched_damage_detections,
             vehicle_part=vehicle_part,
+            affected_parts=affected_parts,
         )
+
+    @staticmethod
+    def _extract_affected_parts(
+        damage_detections: list[DetectedObject],
+    ) -> list[str]:
+        affected_parts: list[str] = []
+
+        for detection in damage_detections:
+            affected_part = detection.affectedPart
+
+            if affected_part == "UNKNOWN":
+                continue
+
+            if affected_part not in affected_parts:
+                affected_parts.append(affected_part)
+
+        return affected_parts
 
     def _validate_model_paths(self) -> None:
         model_paths = {
@@ -231,6 +258,7 @@ class DamageAnalyzer:
         primary_damage: DetectedObject,
         damage_detections: list[DetectedObject],
         vehicle_part: str,
+        affected_parts: list[str],
     ) -> DamageAnalysisResponse:
         damage_type = self._normalize_enum_value(
             primary_damage.label
@@ -255,13 +283,16 @@ class DamageAnalyzer:
             recommendedAction=recommended_action,
             partReplacementRequired=replacement_required,
             confidenceScore=primary_damage.confidence,
+            affectedParts=affected_parts,
             analysisMessage=(
                 f"{filename} adlı görselde "
                 f"{len(damage_detections)} hasarlı bölge "
                 f"tespit edildi. En yüksek güven skoru: "
                 f"{primary_damage.confidence:.2f}. "
-                f"Tespit edilen araç parçası: "
-                f"{vehicle_part}."
+                f"Ana hasarlı araç parçası: "
+                f"{vehicle_part}. "
+                f"Etkilenen parçalar: "
+                f"{', '.join(affected_parts) if affected_parts else 'UNKNOWN'}."
             ),
             detections=damage_detections,
         )
@@ -287,12 +318,28 @@ class DamageAnalyzer:
             damageType="NO_VISIBLE_DAMAGE",
             damageSeverity="NONE",
             vehiclePart="UNKNOWN",
+            affectedParts=[],
             recommendedAction="NO_ACTION",
             partReplacementRequired=False,
             confidenceScore=0.0,
             analysisMessage=message,
             detections=[],
         )
+
+    def _assign_parts_to_damage_detections(
+        self,
+        damage_detections: list[DetectedObject],
+        vehicle_part_detections: list[DetectedObject],
+    ) -> list[DetectedObject]:
+        for damage_detection in damage_detections:
+            damage_detection.affectedPart = (
+                self._match_damage_to_vehicle_part(
+                    damage=damage_detection,
+                    vehicle_parts=vehicle_part_detections,
+                )
+            )
+
+        return damage_detections
 
     def _match_damage_to_vehicle_part(
         self,

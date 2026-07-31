@@ -10,7 +10,11 @@ class BoundingBox(BaseModel):
 
 class DetectedObject(BaseModel):
     label: str
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: float = Field(
+        ge=0.0,
+        le=1.0,
+    )
+    affectedPart: str = "UNKNOWN"
     boundingBox: BoundingBox
 
 
@@ -18,6 +22,9 @@ class DamageAnalysisResponse(BaseModel):
     damageType: str
     damageSeverity: str
     vehiclePart: str
+    affectedParts: list[str] = Field(
+        default_factory=list
+    )
     recommendedAction: str
     partReplacementRequired: bool
     confidenceScore: float = Field(
