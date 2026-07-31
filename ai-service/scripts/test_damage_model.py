@@ -5,7 +5,13 @@ from ultralytics import YOLO
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-MODEL_PATH = PROJECT_ROOT / "models" / "best.pt"
+MODEL_PATH = (
+    PROJECT_ROOT
+    / "training-runs"
+    / "vehicle_damage_type_v1"
+    / "weights"
+    / "best.pt"
+)
 TEST_IMAGE_PATH = PROJECT_ROOT / "test-images" / "carsc.jpg"
 OUTPUT_PATH = PROJECT_ROOT / "prediction-runs"
 

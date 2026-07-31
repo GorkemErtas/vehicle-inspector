@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.gorkem.vehicle_inspector.client.AiAnalysisClient;
 import com.gorkem.vehicle_inspector.dto.response.AiAnalysisResponse;
-import com.gorkem.vehicle_inspector.exception.AiServiceException;
 import com.gorkem.vehicle_inspector.dto.response.BoundingBoxResponse;
 import com.gorkem.vehicle_inspector.dto.response.DetectedObjectResponse;
 import com.gorkem.vehicle_inspector.entity.DamageDetection;
