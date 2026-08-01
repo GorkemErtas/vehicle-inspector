@@ -18,7 +18,11 @@ import com.gorkem.vehicle_inspector.dto.response.AiAnalysisResponse;
 import com.gorkem.vehicle_inspector.dto.response.BoundingBoxResponse;
 import com.gorkem.vehicle_inspector.dto.response.DetectedObjectResponse;
 import com.gorkem.vehicle_inspector.entity.DamageDetection;
+import com.gorkem.vehicle_inspector.entity.RepairPrice;
+import com.gorkem.vehicle_inspector.entity.VehiclePart;
 
+import java.math.BigDecimal;
+import java.util.Objects;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,19 +35,22 @@ public class DamageInspectionService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final AiAnalysisClient aiAnalysisClient;
+    private final PriceEstimationService priceEstimationService;
 
     public DamageInspectionService(
             DamageInspectionRepository inspectionRepository,
             VehicleRepository vehicleRepository,
             UserRepository userRepository,
             FileStorageService fileStorageService,
-            AiAnalysisClient aiAnalysisClient
+            AiAnalysisClient aiAnalysisClient,
+            PriceEstimationService priceEstimationService
     ) {
         this.inspectionRepository = inspectionRepository;
         this.vehicleRepository = vehicleRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.aiAnalysisClient = aiAnalysisClient;
+        this.priceEstimationService = priceEstimationService;
     }
 
     @Transactional
@@ -285,16 +292,75 @@ public class DamageInspectionService {
                     aiResponse.getAnalysisMessage()
             );
 
-            inspection.setEstimatedMinimumPrice(null);
-            inspection.setEstimatedMaximumPrice(null);
+            List<VehiclePart> affectedParts =
+                    inspection.getDetections()
+                            .stream()
+                            .map(DamageDetection::getAffectedPart)
+                            .filter(Objects::nonNull)
+                            .filter(part ->
+                                    part != VehiclePart.UNKNOWN
+                            )
+                            .distinct()
+                            .toList();
+
+            List<RepairPrice> matchingPrices =
+                    priceEstimationService.findMatchingPrices(
+                            inspection.getVehicle(),
+                            affectedParts,
+                            inspection.getRecommendedAction(),
+                            inspection.getDamageSeverity()
+                    );
+
+            BigDecimal totalMinimumPrice =
+                    matchingPrices.stream()
+                            .map(RepairPrice::getMinimumPrice)
+                            .reduce(
+                                    BigDecimal.ZERO,
+                                    BigDecimal::add
+                            );
+
+            BigDecimal totalMaximumPrice =
+                    matchingPrices.stream()
+                            .map(RepairPrice::getMaximumPrice)
+                            .reduce(
+                                    BigDecimal.ZERO,
+                                    BigDecimal::add
+                            );
+
             inspection.setPriceCurrency("TRY");
             inspection.setPriceCalculatedAt(
                     LocalDateTime.now()
             );
-            inspection.setPriceAvailable(false);
-            inspection.setPriceMessage(
-                    "Çok parçalı fiyat hesaplama sistemi henüz uygulanmadı."
-            );
+
+            if (matchingPrices.isEmpty()) {
+                inspection.setEstimatedMinimumPrice(null);
+                inspection.setEstimatedMaximumPrice(null);
+                inspection.setPriceAvailable(false);
+                inspection.setPriceMessage(
+                        "Etkilenen parçalar için uygun fiyat kaydı bulunamadı."
+                );
+            } else {
+                inspection.setEstimatedMinimumPrice(
+                        totalMinimumPrice
+                );
+                inspection.setEstimatedMaximumPrice(
+                        totalMaximumPrice
+                );
+                inspection.setPriceAvailable(true);
+
+                if (matchingPrices.size() == affectedParts.size()) {
+                    inspection.setPriceMessage(
+                            "Tüm etkilenen parçalar için tahmini fiyat hesaplandı."
+                    );
+                } else {
+                    inspection.setPriceMessage(
+                            matchingPrices.size()
+                                    + " / "
+                                    + affectedParts.size()
+                                    + " etkilenen parça için fiyat bulundu."
+                    );
+                }
+            }
 
             inspection.setStatus(
                     InspectionStatus.COMPLETED
