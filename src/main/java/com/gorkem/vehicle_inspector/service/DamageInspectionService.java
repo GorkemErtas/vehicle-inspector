@@ -20,6 +20,7 @@ import com.gorkem.vehicle_inspector.dto.response.DetectedObjectResponse;
 import com.gorkem.vehicle_inspector.entity.DamageDetection;
 import com.gorkem.vehicle_inspector.entity.RepairPrice;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
+import com.gorkem.vehicle_inspector.entity.DamageInspectionPriceDetail;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -147,6 +148,7 @@ public class DamageInspectionService {
         );
 
         inspection.clearDetections();
+        inspection.clearPriceDetails();
 
         inspection.setStatus(InspectionStatus.PENDING);
 
@@ -237,6 +239,7 @@ public class DamageInspectionService {
                     aiAnalysisClient.analyze(storedImagePath);
 
             inspection.clearDetections();
+            inspection.clearPriceDetails();
 
             if (aiResponse.getDetections() != null) {
                 for (DetectedObjectResponse detectedObject
@@ -310,6 +313,42 @@ public class DamageInspectionService {
                             inspection.getRecommendedAction(),
                             inspection.getDamageSeverity()
                     );
+
+            for (VehiclePart affectedPart : affectedParts) {
+
+                RepairPrice matchingPrice =
+                        matchingPrices.stream()
+                                .filter(price ->
+                                        price.getVehiclePart()
+                                                == affectedPart
+                                )
+                                .findFirst()
+                                .orElse(null);
+
+                DamageInspectionPriceDetail priceDetail;
+
+                if (matchingPrice == null) {
+                    priceDetail =
+                            new DamageInspectionPriceDetail(
+                                    inspection,
+                                    affectedPart,
+                                    false,
+                                    null,
+                                    null
+                            );
+                } else {
+                    priceDetail =
+                            new DamageInspectionPriceDetail(
+                                    inspection,
+                                    affectedPart,
+                                    true,
+                                    matchingPrice.getMinimumPrice(),
+                                    matchingPrice.getMaximumPrice()
+                            );
+                }
+
+                inspection.addPriceDetail(priceDetail);
+            }
 
             BigDecimal totalMinimumPrice =
                     matchingPrices.stream()

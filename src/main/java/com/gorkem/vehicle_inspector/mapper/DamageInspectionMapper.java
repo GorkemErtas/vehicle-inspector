@@ -6,6 +6,7 @@ import com.gorkem.vehicle_inspector.dto.response.DamageDetectionResponse;
 import java.util.List;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
 import java.util.Objects;
+import com.gorkem.vehicle_inspector.dto.response.RepairPriceDetailResponse;
 
 public final class DamageInspectionMapper {
 
@@ -46,6 +47,19 @@ public final class DamageInspectionMapper {
                         .distinct()
                         .toList();
 
+        List<RepairPriceDetailResponse> priceDetails =
+                inspection.getPriceDetails()
+                        .stream()
+                        .map(priceDetail ->
+                                new RepairPriceDetailResponse(
+                                        priceDetail.getVehiclePart(),
+                                        priceDetail.getPriceFound(),
+                                        priceDetail.getMinimumPrice(),
+                                        priceDetail.getMaximumPrice()
+                                )
+                        )
+                        .toList();
+
         return new DamageInspectionResponse(
                 inspection.getId(),
                 inspection.getVehicle().getId(),
@@ -68,6 +82,7 @@ public final class DamageInspectionMapper {
                 inspection.getPriceCalculatedAt(),
                 inspection.getPriceAvailable(),
                 inspection.getPriceMessage(),
+                priceDetails,
                 detections
         );
     }

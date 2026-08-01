@@ -33,6 +33,14 @@ public class DamageInspection {
     private List<DamageDetection> detections =
             new ArrayList<>();
 
+    @OneToMany(
+            mappedBy = "inspection",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<DamageInspectionPriceDetail> priceDetails =
+            new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "user_id",
@@ -211,6 +219,10 @@ public class DamageInspection {
         return detections;
     }
 
+    public List<DamageInspectionPriceDetail> getPriceDetails() {
+        return priceDetails;
+    }
+
     public void setVehicle(Vehicle vehicle) {
         this.vehicle = vehicle;
     }
@@ -297,6 +309,17 @@ public class DamageInspection {
     ) {
         detections.add(detection);
         detection.setInspection(this);
+    }
+
+    public void addPriceDetail(
+            DamageInspectionPriceDetail priceDetail
+    ) {
+        priceDetails.add(priceDetail);
+        priceDetail.setInspection(this);
+    }
+
+    public void clearPriceDetails() {
+        priceDetails.clear();
     }
 
     public void clearDetections() {

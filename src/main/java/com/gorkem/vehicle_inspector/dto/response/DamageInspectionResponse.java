@@ -33,6 +33,7 @@ public class DamageInspectionResponse {
     private final LocalDateTime priceCalculatedAt;
     private final Boolean priceAvailable;
     private final String priceMessage;
+    private final List<RepairPriceDetailResponse> priceDetails;
     private final List<DamageDetectionResponse> detections;
 
     public DamageInspectionResponse(
@@ -57,6 +58,7 @@ public class DamageInspectionResponse {
             LocalDateTime priceCalculatedAt,
             Boolean priceAvailable,
             String priceMessage,
+            List<RepairPriceDetailResponse> priceDetails,
             List<DamageDetectionResponse> detections
     ) {
         this.id = id;
@@ -80,6 +82,7 @@ public class DamageInspectionResponse {
         this.priceCalculatedAt = priceCalculatedAt;
         this.priceAvailable = priceAvailable;
         this.priceMessage = priceMessage;
+        this.priceDetails = priceDetails;
         this.detections = detections;
     }
 
@@ -165,6 +168,10 @@ public class DamageInspectionResponse {
 
     public String getPriceMessage() {
         return priceMessage;
+    }
+
+    public List<RepairPriceDetailResponse> getPriceDetails() {
+        return priceDetails;
     }
 
     public List<DamageDetectionResponse> getDetections() {
