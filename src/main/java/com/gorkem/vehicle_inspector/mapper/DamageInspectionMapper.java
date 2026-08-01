@@ -55,7 +55,6 @@ public final class DamageInspectionMapper {
                 inspection.getStatus(),
                 inspection.getDamageSeverity(),
                 inspection.getDamageType(),
-                inspection.getVehiclePart(),
                 affectedParts,
                 inspection.getRecommendedAction(),
                 inspection.getPartReplacementRequired(),

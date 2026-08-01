@@ -14,8 +14,6 @@ public class AiAnalysisResponse {
 
     private DamageSeverity damageSeverity;
 
-    private VehiclePart vehiclePart;
-
     private RepairAction recommendedAction;
 
     private Boolean partReplacementRequired;
@@ -47,14 +45,6 @@ public class AiAnalysisResponse {
             DamageSeverity damageSeverity
     ) {
         this.damageSeverity = damageSeverity;
-    }
-
-    public VehiclePart getVehiclePart() {
-        return vehiclePart;
-    }
-
-    public void setVehiclePart(VehiclePart vehiclePart) {
-        this.vehiclePart = vehiclePart;
     }
 
     public RepairAction getRecommendedAction() {

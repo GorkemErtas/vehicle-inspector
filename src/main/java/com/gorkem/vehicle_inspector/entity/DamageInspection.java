@@ -59,10 +59,6 @@ public class DamageInspection {
     private DamageType damageType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "vehicle_part", length = 50)
-    private VehiclePart vehiclePart;
-
-    @Enumerated(EnumType.STRING)
     @Column(name = "recommended_action", length = 50)
     private RepairAction recommendedAction;
 
@@ -163,10 +159,6 @@ public class DamageInspection {
         return damageType;
     }
 
-    public VehiclePart getVehiclePart() {
-        return vehiclePart;
-    }
-
     public RepairAction getRecommendedAction() {
         return recommendedAction;
     }
@@ -243,10 +235,6 @@ public class DamageInspection {
 
     public void setDamageType(DamageType damageType) {
         this.damageType = damageType;
-    }
-
-    public void setVehiclePart(VehiclePart vehiclePart) {
-        this.vehiclePart = vehiclePart;
     }
 
     public void setRecommendedAction(

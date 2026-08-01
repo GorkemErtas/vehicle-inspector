@@ -21,7 +21,6 @@ class DetectedObject(BaseModel):
 class DamageAnalysisResponse(BaseModel):
     damageType: str
     damageSeverity: str
-    vehiclePart: str
     affectedParts: list[str] = Field(
         default_factory=list
     )

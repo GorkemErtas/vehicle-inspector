@@ -205,8 +205,6 @@ class DamageAnalyzer:
             )
         )
 
-        vehicle_part = primary_damage.affectedPart
-
         affected_parts = self._extract_affected_parts(
             matched_damage_detections
         )
@@ -215,7 +213,6 @@ class DamageAnalyzer:
             filename=safe_filename,
             primary_damage=primary_damage,
             damage_detections=matched_damage_detections,
-            vehicle_part=vehicle_part,
             affected_parts=affected_parts,
         )
 
@@ -235,6 +232,44 @@ class DamageAnalyzer:
                 affected_parts.append(affected_part)
 
         return affected_parts
+
+    @staticmethod
+    def _count_reliable_damage_detections(
+        damage_detections: list[DetectedObject],
+    ) -> int:
+        return sum(
+            detection.confidence >= 0.35
+            for detection in damage_detections
+        )
+
+    @staticmethod
+    def _determine_damage_severity(
+        damage_type: str,
+        affected_part_count: int,
+        reliable_detection_count: int,
+    ) -> str:
+        if damage_type == "NO_VISIBLE_DAMAGE":
+            return "NONE"
+
+        if (
+            damage_type == "BROKEN_PART"
+            and affected_part_count >= 2
+        ):
+            return "SEVERE"
+
+        if affected_part_count >= 3:
+            return "SEVERE"
+
+        if reliable_detection_count >= 6:
+            return "SEVERE"
+
+        if affected_part_count == 2:
+            return "MODERATE"
+
+        if reliable_detection_count >= 3:
+            return "MODERATE"
+
+        return "MINOR"
 
     def _validate_model_paths(self) -> None:
         model_paths = {
@@ -257,7 +292,6 @@ class DamageAnalyzer:
         filename: str,
         primary_damage: DetectedObject,
         damage_detections: list[DetectedObject],
-        vehicle_part: str,
         affected_parts: list[str],
     ) -> DamageAnalysisResponse:
         damage_type = self._normalize_enum_value(
@@ -270,6 +304,20 @@ class DamageAnalyzer:
             )
         )
 
+        reliable_detection_count = (
+            self._count_reliable_damage_detections(
+                damage_detections
+            )
+        )
+
+        damage_severity = (
+            self._determine_damage_severity(
+                damage_type=damage_type,
+                affected_part_count=len(affected_parts),
+                reliable_detection_count=reliable_detection_count,
+            )
+        )
+
         replacement_required = (
             self._determine_replacement_requirement(
                 damage_type
@@ -278,8 +326,7 @@ class DamageAnalyzer:
 
         return DamageAnalysisResponse(
             damageType=damage_type,
-            damageSeverity="UNKNOWN",
-            vehiclePart=vehicle_part,
+            damageSeverity=damage_severity,
             recommendedAction=recommended_action,
             partReplacementRequired=replacement_required,
             confidenceScore=primary_damage.confidence,
@@ -287,10 +334,10 @@ class DamageAnalyzer:
             analysisMessage=(
                 f"{filename} adlı görselde "
                 f"{len(damage_detections)} hasarlı bölge "
-                f"tespit edildi. En yüksek güven skoru: "
+                f"tespit edildi. "
+                f"Hasar seviyesi: {damage_severity}. "
+                f"En yüksek güven skoru: "
                 f"{primary_damage.confidence:.2f}. "
-                f"Ana hasarlı araç parçası: "
-                f"{vehicle_part}. "
                 f"Etkilenen parçalar: "
                 f"{', '.join(affected_parts) if affected_parts else 'UNKNOWN'}."
             ),
@@ -317,7 +364,6 @@ class DamageAnalyzer:
         return DamageAnalysisResponse(
             damageType="NO_VISIBLE_DAMAGE",
             damageSeverity="NONE",
-            vehiclePart="UNKNOWN",
             affectedParts=[],
             recommendedAction="NO_ACTION",
             partReplacementRequired=False,

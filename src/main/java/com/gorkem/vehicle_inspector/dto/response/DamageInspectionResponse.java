@@ -20,7 +20,6 @@ public class DamageInspectionResponse {
     private final InspectionStatus status;
     private final DamageSeverity damageSeverity;
     private final DamageType damageType;
-    private final VehiclePart vehiclePart;
     private final List<VehiclePart> affectedParts;
     private final RepairAction recommendedAction;
     private final Boolean partReplacementRequired;
@@ -45,7 +44,6 @@ public class DamageInspectionResponse {
             InspectionStatus status,
             DamageSeverity damageSeverity,
             DamageType damageType,
-            VehiclePart vehiclePart,
             List<VehiclePart> affectedParts,
             RepairAction recommendedAction,
             Boolean partReplacementRequired,
@@ -69,7 +67,6 @@ public class DamageInspectionResponse {
         this.status = status;
         this.damageSeverity = damageSeverity;
         this.damageType = damageType;
-        this.vehiclePart = vehiclePart;
         this.affectedParts = affectedParts;
         this.recommendedAction = recommendedAction;
         this.partReplacementRequired = partReplacementRequired;
@@ -116,10 +113,6 @@ public class DamageInspectionResponse {
 
     public DamageType getDamageType() {
         return damageType;
-    }
-
-    public VehiclePart getVehiclePart() {
-        return vehiclePart;
     }
 
     public List<VehiclePart> getAffectedParts() {
