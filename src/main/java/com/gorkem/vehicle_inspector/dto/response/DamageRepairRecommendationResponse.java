@@ -4,14 +4,12 @@ import com.gorkem.vehicle_inspector.entity.DamageType;
 import com.gorkem.vehicle_inspector.entity.RepairAction;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
 
-import java.math.BigDecimal;
+import java.util.List;
 
-public record RepairPriceDetailResponse(
-        VehiclePart vehiclePart,
+public record DamageRepairRecommendationResponse(
         DamageType damageType,
-        RepairAction repairAction,
-        Boolean found,
-        BigDecimal minimumPrice,
-        BigDecimal maximumPrice
+        RepairAction recommendedAction,
+        Boolean partReplacementRequired,
+        List<VehiclePart> affectedParts
 ) {
 }

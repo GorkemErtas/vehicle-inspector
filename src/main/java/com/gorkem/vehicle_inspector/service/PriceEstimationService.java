@@ -1,7 +1,7 @@
 package com.gorkem.vehicle_inspector.service;
 
+import com.gorkem.vehicle_inspector.entity.DamageRepairRecommendation;
 import com.gorkem.vehicle_inspector.entity.DamageSeverity;
-import com.gorkem.vehicle_inspector.entity.RepairAction;
 import com.gorkem.vehicle_inspector.entity.RepairPrice;
 import com.gorkem.vehicle_inspector.entity.Vehicle;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
@@ -9,8 +9,10 @@ import com.gorkem.vehicle_inspector.repository.RepairPriceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class PriceEstimationService {
@@ -26,37 +28,69 @@ public class PriceEstimationService {
     @Transactional(readOnly = true)
     public List<RepairPrice> findMatchingPrices(
             Vehicle vehicle,
-            List<VehiclePart> affectedParts,
-            RepairAction repairAction,
+            List<DamageRepairRecommendation>
+                    repairRecommendations,
             DamageSeverity damageSeverity
     ) {
         if (vehicle == null
-                || affectedParts == null
-                || affectedParts.isEmpty()
-                || repairAction == null
+                || repairRecommendations == null
+                || repairRecommendations.isEmpty()
                 || damageSeverity == null) {
             return List.of();
         }
 
-        return affectedParts.stream()
-                .filter(Objects::nonNull)
-                .filter(part ->
-                        part != VehiclePart.UNKNOWN
-                )
-                .distinct()
-                .map(vehiclePart ->
-                        repairPriceRepository
-                                .findByBrandIgnoreCaseAndModelIgnoreCaseAndModelYearAndVehiclePartAndRepairActionAndDamageSeverityAndActiveTrue(
-                                        vehicle.getBrand().trim(),
-                                        vehicle.getModel().trim(),
-                                        vehicle.getModelYear(),
-                                        vehiclePart,
-                                        repairAction,
-                                        damageSeverity
-                                )
-                                .orElse(null)
-                )
-                .filter(Objects::nonNull)
-                .toList();
+        List<RepairPrice> matchingPrices =
+                new ArrayList<>();
+
+        Set<String> processedConfigurations =
+                new HashSet<>();
+
+        for (DamageRepairRecommendation recommendation
+                : repairRecommendations) {
+
+            if (recommendation == null
+                    || recommendation.getRecommendedAction() == null
+                    || recommendation.getAffectedParts() == null) {
+                continue;
+            }
+
+            for (VehiclePart vehiclePart
+                    : recommendation.getAffectedParts()) {
+
+                if (vehiclePart == null
+                        || vehiclePart == VehiclePart.UNKNOWN) {
+                    continue;
+                }
+
+                String configurationKey =
+                        vehiclePart.name()
+                                + ":"
+                                + recommendation
+                                .getRecommendedAction()
+                                .name();
+
+                if (!processedConfigurations.add(
+                        configurationKey
+                )) {
+                    continue;
+                }
+
+                repairPriceRepository
+                        .findByBrandIgnoreCaseAndModelIgnoreCaseAndModelYearAndVehiclePartAndRepairActionAndDamageSeverityAndActiveTrue(
+                                vehicle.getBrand().trim(),
+                                vehicle.getModel().trim(),
+                                vehicle.getModelYear(),
+                                vehiclePart,
+                                recommendation
+                                        .getRecommendedAction(),
+                                damageSeverity
+                        )
+                        .ifPresent(
+                                matchingPrices::add
+                        );
+            }
+        }
+
+        return matchingPrices;
     }
 }

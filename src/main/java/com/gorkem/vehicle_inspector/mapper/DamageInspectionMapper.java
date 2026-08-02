@@ -1,14 +1,18 @@
 package com.gorkem.vehicle_inspector.mapper;
 
+import com.gorkem.vehicle_inspector.dto.response.DamageDetectionResponse;
 import com.gorkem.vehicle_inspector.dto.response.DamageInspectionResponse;
 import com.gorkem.vehicle_inspector.entity.DamageInspection;
-import com.gorkem.vehicle_inspector.dto.response.DamageDetectionResponse;
 import java.util.List;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
 import java.util.Objects;
 import com.gorkem.vehicle_inspector.dto.response.RepairPriceDetailResponse;
+import com.gorkem.vehicle_inspector.dto.response.DamageRepairRecommendationResponse;
+import com.gorkem.vehicle_inspector.entity.DamageType;
 
 public final class DamageInspectionMapper {
+
+    private static final double AFFECTED_PART_CONFIDENCE_THRESHOLD = 0.50;
 
     private DamageInspectionMapper() {
     }
@@ -37,6 +41,11 @@ public final class DamageInspectionMapper {
         List<VehiclePart> affectedParts =
                 inspection.getDetections()
                         .stream()
+                        .filter(detection ->
+                                detection.getConfidence() != null
+                                        && detection.getConfidence()
+                                        >= AFFECTED_PART_CONFIDENCE_THRESHOLD
+                        )
                         .map(detection ->
                                 detection.getAffectedPart()
                         )
@@ -47,12 +56,38 @@ public final class DamageInspectionMapper {
                         .distinct()
                         .toList();
 
+        List<DamageRepairRecommendationResponse>
+                repairRecommendations =
+                inspection.getRepairRecommendations()
+                        .stream()
+                        .map(recommendation ->
+                                new DamageRepairRecommendationResponse(
+                                        recommendation.getDamageType(),
+                                        recommendation.getRecommendedAction(),
+                                        recommendation.getPartReplacementRequired(),
+                                        recommendation.getAffectedParts()
+                                                .stream()
+                                                .toList()
+                                )
+                        )
+                        .toList();
+
+        List<DamageType> damageTypes =
+                repairRecommendations.stream()
+                        .map(
+                                DamageRepairRecommendationResponse::damageType
+                        )
+                        .distinct()
+                        .toList();
+
         List<RepairPriceDetailResponse> priceDetails =
                 inspection.getPriceDetails()
                         .stream()
                         .map(priceDetail ->
                                 new RepairPriceDetailResponse(
                                         priceDetail.getVehiclePart(),
+                                        priceDetail.getDamageType(),
+                                        priceDetail.getRepairAction(),
                                         priceDetail.getPriceFound(),
                                         priceDetail.getMinimumPrice(),
                                         priceDetail.getMaximumPrice()
@@ -68,10 +103,9 @@ public final class DamageInspectionMapper {
                 inspection.getImagePath(),
                 inspection.getStatus(),
                 inspection.getDamageSeverity(),
-                inspection.getDamageType(),
+                damageTypes,
                 affectedParts,
-                inspection.getRecommendedAction(),
-                inspection.getPartReplacementRequired(),
+                repairRecommendations,
                 inspection.getConfidenceScore(),
                 inspection.getAnalysisMessage(),
                 inspection.getCreatedAt(),

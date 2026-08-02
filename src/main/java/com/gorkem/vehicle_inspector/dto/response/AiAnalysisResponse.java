@@ -10,13 +10,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AiAnalysisResponse {
 
-    private DamageType damageType;
-
     private DamageSeverity damageSeverity;
-
-    private RepairAction recommendedAction;
-
-    private Boolean partReplacementRequired;
 
     private Double confidenceScore;
 
@@ -26,15 +20,12 @@ public class AiAnalysisResponse {
 
     private List<VehiclePart> affectedParts;
 
+    private List<DamageType> damageTypes;
+
+    private List<RepairRecommendationResponse>
+            repairRecommendations;
+
     public AiAnalysisResponse() {
-    }
-
-    public DamageType getDamageType() {
-        return damageType;
-    }
-
-    public void setDamageType(DamageType damageType) {
-        this.damageType = damageType;
     }
 
     public DamageSeverity getDamageSeverity() {
@@ -45,27 +36,6 @@ public class AiAnalysisResponse {
             DamageSeverity damageSeverity
     ) {
         this.damageSeverity = damageSeverity;
-    }
-
-    public RepairAction getRecommendedAction() {
-        return recommendedAction;
-    }
-
-    public void setRecommendedAction(
-            RepairAction recommendedAction
-    ) {
-        this.recommendedAction = recommendedAction;
-    }
-
-    public Boolean getPartReplacementRequired() {
-        return partReplacementRequired;
-    }
-
-    public void setPartReplacementRequired(
-            Boolean partReplacementRequired
-    ) {
-        this.partReplacementRequired =
-                partReplacementRequired;
     }
 
     public Double getConfidenceScore() {
@@ -106,5 +76,28 @@ public class AiAnalysisResponse {
             List<VehiclePart> affectedParts
     ) {
         this.affectedParts = affectedParts;
+    }
+
+    public List<DamageType> getDamageTypes() {
+        return damageTypes;
+    }
+
+    public void setDamageTypes(
+            List<DamageType> damageTypes
+    ) {
+        this.damageTypes = damageTypes;
+    }
+
+    public List<RepairRecommendationResponse>
+    getRepairRecommendations() {
+        return repairRecommendations;
+    }
+
+    public void setRepairRecommendations(
+            List<RepairRecommendationResponse>
+                    repairRecommendations
+    ) {
+        this.repairRecommendations =
+                repairRecommendations;
     }
 }

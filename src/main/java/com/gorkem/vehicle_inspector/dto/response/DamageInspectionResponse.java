@@ -3,7 +3,6 @@ package com.gorkem.vehicle_inspector.dto.response;
 import com.gorkem.vehicle_inspector.entity.DamageSeverity;
 import com.gorkem.vehicle_inspector.entity.DamageType;
 import com.gorkem.vehicle_inspector.entity.InspectionStatus;
-import com.gorkem.vehicle_inspector.entity.RepairAction;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
 import java.math.BigDecimal;
 import java.util.List;
@@ -19,10 +18,8 @@ public class DamageInspectionResponse {
     private final String imagePath;
     private final InspectionStatus status;
     private final DamageSeverity damageSeverity;
-    private final DamageType damageType;
     private final List<VehiclePart> affectedParts;
-    private final RepairAction recommendedAction;
-    private final Boolean partReplacementRequired;
+    private final List<DamageRepairRecommendationResponse> repairRecommendations;
     private final Double confidenceScore;
     private final String analysisMessage;
     private final LocalDateTime createdAt;
@@ -35,6 +32,7 @@ public class DamageInspectionResponse {
     private final String priceMessage;
     private final List<RepairPriceDetailResponse> priceDetails;
     private final List<DamageDetectionResponse> detections;
+    private final List<DamageType> damageTypes;
 
     public DamageInspectionResponse(
             Long id,
@@ -44,10 +42,9 @@ public class DamageInspectionResponse {
             String imagePath,
             InspectionStatus status,
             DamageSeverity damageSeverity,
-            DamageType damageType,
+            List<DamageType> damageTypes,
             List<VehiclePart> affectedParts,
-            RepairAction recommendedAction,
-            Boolean partReplacementRequired,
+            List<DamageRepairRecommendationResponse> repairRecommendations,
             Double confidenceScore,
             String analysisMessage,
             LocalDateTime createdAt,
@@ -68,10 +65,9 @@ public class DamageInspectionResponse {
         this.imagePath = imagePath;
         this.status = status;
         this.damageSeverity = damageSeverity;
-        this.damageType = damageType;
+        this.damageTypes = damageTypes;
         this.affectedParts = affectedParts;
-        this.recommendedAction = recommendedAction;
-        this.partReplacementRequired = partReplacementRequired;
+        this.repairRecommendations = repairRecommendations;
         this.confidenceScore = confidenceScore;
         this.analysisMessage = analysisMessage;
         this.createdAt = createdAt;
@@ -114,20 +110,8 @@ public class DamageInspectionResponse {
         return damageSeverity;
     }
 
-    public DamageType getDamageType() {
-        return damageType;
-    }
-
     public List<VehiclePart> getAffectedParts() {
         return affectedParts;
-    }
-
-    public RepairAction getRecommendedAction() {
-        return recommendedAction;
-    }
-
-    public Boolean getPartReplacementRequired() {
-        return partReplacementRequired;
     }
 
     public Double getConfidenceScore() {
@@ -176,5 +160,14 @@ public class DamageInspectionResponse {
 
     public List<DamageDetectionResponse> getDetections() {
         return detections;
+    }
+
+    public List<DamageRepairRecommendationResponse>
+    getRepairRecommendations() {
+        return repairRecommendations;
+    }
+
+    public List<DamageType> getDamageTypes() {
+        return damageTypes;
     }
 }

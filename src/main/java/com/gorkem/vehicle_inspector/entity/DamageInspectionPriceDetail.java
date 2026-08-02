@@ -33,6 +33,22 @@ public class DamageInspectionPriceDetail {
     )
     private VehiclePart vehiclePart;
 
+    @Enumerated(EnumType.STRING)
+    @Column(
+            name = "damage_type",
+            nullable = false,
+            length = 50
+    )
+    private DamageType damageType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(
+            name = "repair_action",
+            nullable = false,
+            length = 50
+    )
+    private RepairAction repairAction;
+
     @Column(name = "price_found", nullable = false)
     private Boolean priceFound;
 
@@ -56,12 +72,16 @@ public class DamageInspectionPriceDetail {
     public DamageInspectionPriceDetail(
             DamageInspection inspection,
             VehiclePart vehiclePart,
+            DamageType damageType,
+            RepairAction repairAction,
             Boolean priceFound,
             BigDecimal minimumPrice,
             BigDecimal maximumPrice
     ) {
         this.inspection = inspection;
         this.vehiclePart = vehiclePart;
+        this.damageType = damageType;
+        this.repairAction = repairAction;
         this.priceFound = priceFound;
         this.minimumPrice = minimumPrice;
         this.maximumPrice = maximumPrice;
@@ -95,5 +115,13 @@ public class DamageInspectionPriceDetail {
             DamageInspection inspection
     ) {
         this.inspection = inspection;
+    }
+
+    public DamageType getDamageType() {
+        return damageType;
+    }
+
+    public RepairAction getRepairAction() {
+        return repairAction;
     }
 }
