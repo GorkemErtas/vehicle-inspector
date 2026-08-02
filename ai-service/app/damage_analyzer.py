@@ -9,6 +9,7 @@ from app.schemas import (
     BoundingBox,
     DamageAnalysisResponse,
     DetectedObject,
+    DamageRecommendation,
 )
 
 
@@ -73,7 +74,9 @@ class DamageAnalyzer:
         damage_confidence_threshold: float = 0.25,
         damage_iou_threshold: float = 0.45,
         vehicle_part_confidence_threshold: float = 0.25,
-        minimum_part_overlap_ratio: float = 0.10,
+        minimum_part_overlap_ratio: float = 0.25,
+        affected_part_damage_confidence_threshold: float = 0.50,
+        damage_recommendation_confidence_threshold: float = 0.30,
     ) -> None:
         self.vehicle_model_path = Path(vehicle_model_path)
         self.damage_model_path = Path(damage_model_path)
@@ -93,6 +96,14 @@ class DamageAnalyzer:
         )
         self.minimum_part_overlap_ratio = (
             minimum_part_overlap_ratio
+        )
+
+        self.affected_part_damage_confidence_threshold = (
+            affected_part_damage_confidence_threshold
+        )
+
+        self.damage_recommendation_confidence_threshold = (
+            damage_recommendation_confidence_threshold
         )
 
         self._validate_model_paths()
@@ -216,13 +227,19 @@ class DamageAnalyzer:
             affected_parts=affected_parts,
         )
 
-    @staticmethod
     def _extract_affected_parts(
+        self,
         damage_detections: list[DetectedObject],
     ) -> list[str]:
         affected_parts: list[str] = []
 
         for detection in damage_detections:
+            if (
+                detection.confidence
+                < self.affected_part_damage_confidence_threshold
+            ):
+                continue
+
             affected_part = detection.affectedPart
 
             if affected_part == "UNKNOWN":
@@ -232,6 +249,60 @@ class DamageAnalyzer:
                 affected_parts.append(affected_part)
 
         return affected_parts
+
+    def _build_repair_recommendations(
+        self,
+        damage_detections: list[DetectedObject],
+        trusted_affected_parts: list[str],
+    ) -> list[DamageRecommendation]:
+        grouped_parts: dict[str, list[str]] = {}
+
+        for detection in damage_detections:
+            if (
+                detection.confidence
+                < self.damage_recommendation_confidence_threshold
+            ):
+                continue
+
+            damage_type = self._normalize_enum_value(
+                detection.label
+            )
+
+            if damage_type not in grouped_parts:
+                grouped_parts[damage_type] = []
+
+            affected_part = detection.affectedPart
+
+            if (
+                affected_part != "UNKNOWN"
+                and affected_part in trusted_affected_parts
+                and affected_part not in grouped_parts[damage_type]
+            ):
+                grouped_parts[damage_type].append(
+                    affected_part
+                )
+
+        recommendations: list[DamageRecommendation] = []
+
+        for damage_type, affected_parts in grouped_parts.items():
+            recommendations.append(
+                DamageRecommendation(
+                    damageType=damage_type,
+                    recommendedAction=(
+                        self._determine_recommended_action(
+                            damage_type
+                        )
+                    ),
+                    partReplacementRequired=(
+                        self._determine_replacement_requirement(
+                            damage_type
+                        )
+                    ),
+                    affectedParts=affected_parts,
+                )
+            )
+
+        return recommendations
 
     @staticmethod
     def _count_reliable_damage_detections(
@@ -246,27 +317,23 @@ class DamageAnalyzer:
     def _determine_damage_severity(
         damage_type: str,
         affected_part_count: int,
-        reliable_detection_count: int,
+        highest_confidence: float,
     ) -> str:
         if damage_type == "NO_VISIBLE_DAMAGE":
             return "NONE"
 
-        if (
-            damage_type == "BROKEN_PART"
-            and affected_part_count >= 2
-        ):
-            return "SEVERE"
+        if damage_type == "BROKEN_PART":
+            if affected_part_count >= 2:
+                return "SEVERE"
+            return "MODERATE"
 
         if affected_part_count >= 3:
-            return "SEVERE"
-
-        if reliable_detection_count >= 6:
             return "SEVERE"
 
         if affected_part_count == 2:
             return "MODERATE"
 
-        if reliable_detection_count >= 3:
+        if highest_confidence >= 0.60:
             return "MODERATE"
 
         return "MINOR"
@@ -298,43 +365,37 @@ class DamageAnalyzer:
             primary_damage.label
         )
 
-        recommended_action = (
-            self._determine_recommended_action(
-                damage_type
+        repair_recommendations = (
+            self._build_repair_recommendations(
+                damage_detections=damage_detections,
+                trusted_affected_parts=affected_parts,
             )
         )
 
-        reliable_detection_count = (
-            self._count_reliable_damage_detections(
-                damage_detections
-            )
-        )
+        damage_types = [
+            recommendation.damageType
+            for recommendation in repair_recommendations
+        ]
 
         damage_severity = (
             self._determine_damage_severity(
                 damage_type=damage_type,
                 affected_part_count=len(affected_parts),
-                reliable_detection_count=reliable_detection_count,
-            )
-        )
-
-        replacement_required = (
-            self._determine_replacement_requirement(
-                damage_type
+                highest_confidence=primary_damage.confidence,
             )
         )
 
         return DamageAnalysisResponse(
-            damageType=damage_type,
+            damageTypes=damage_types,
             damageSeverity=damage_severity,
-            recommendedAction=recommended_action,
-            partReplacementRequired=replacement_required,
-            confidenceScore=primary_damage.confidence,
             affectedParts=affected_parts,
+            repairRecommendations=repair_recommendations,
+            confidenceScore=primary_damage.confidence,
             analysisMessage=(
                 f"{filename} adlı görselde "
                 f"{len(damage_detections)} hasarlı bölge "
                 f"tespit edildi. "
+                f"Hasar türleri: {', '.join(damage_types)}. "
                 f"Hasar seviyesi: {damage_severity}. "
                 f"En yüksek güven skoru: "
                 f"{primary_damage.confidence:.2f}. "
@@ -362,11 +423,10 @@ class DamageAnalyzer:
             )
 
         return DamageAnalysisResponse(
-            damageType="NO_VISIBLE_DAMAGE",
+            damageTypes=[],
             damageSeverity="NONE",
             affectedParts=[],
-            recommendedAction="NO_ACTION",
-            partReplacementRequired=False,
+            repairRecommendations=[],
             confidenceScore=0.0,
             analysisMessage=message,
             detections=[],
@@ -416,15 +476,7 @@ class DamageAnalyzer:
                 vehicle_part.boundingBox,
             )
 
-            damage_center_inside = self._is_damage_center_inside(
-                damage.boundingBox,
-                vehicle_part.boundingBox,
-            )
-
-            if (
-                overlap_ratio < self.minimum_part_overlap_ratio
-                and not damage_center_inside
-            ):
+            if overlap_ratio < self.minimum_part_overlap_ratio:
                 continue
 
             score = (
@@ -493,28 +545,6 @@ class DamageAnalyzer:
             return 0.0
 
         return intersection_area / damage_area
-
-    @staticmethod
-    def _is_damage_center_inside(
-        damage_box: BoundingBox,
-        part_box: BoundingBox,
-    ) -> bool:
-        damage_center_x = (
-            damage_box.x1 + damage_box.x2
-        ) / 2
-
-        damage_center_y = (
-            damage_box.y1 + damage_box.y2
-        ) / 2
-
-        return (
-            part_box.x1
-            <= damage_center_x
-            <= part_box.x2
-            and part_box.y1
-            <= damage_center_y
-            <= part_box.y2
-        )
 
     @staticmethod
     def _normalize_enum_value(

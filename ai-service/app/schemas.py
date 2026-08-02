@@ -17,15 +17,28 @@ class DetectedObject(BaseModel):
     affectedPart: str = "UNKNOWN"
     boundingBox: BoundingBox
 
+class DamageRecommendation(BaseModel):
+    damageType: str
+    recommendedAction: str
+    partReplacementRequired: bool
+    affectedParts: list[str] = Field(
+        default_factory=list
+    )
 
 class DamageAnalysisResponse(BaseModel):
-    damageType: str
     damageSeverity: str
     affectedParts: list[str] = Field(
         default_factory=list
     )
-    recommendedAction: str
-    partReplacementRequired: bool
+    damageTypes: list[str] = Field(
+        default_factory=list
+    )
+
+    repairRecommendations: list[
+        DamageRecommendation
+    ] = Field(
+        default_factory=list
+    )
     confidenceScore: float = Field(
         ge=0.0,
         le=1.0,
