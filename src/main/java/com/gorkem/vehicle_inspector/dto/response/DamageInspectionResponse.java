@@ -33,6 +33,7 @@ public class DamageInspectionResponse {
     private final List<RepairPriceDetailResponse> priceDetails;
     private final List<DamageDetectionResponse> detections;
     private final List<DamageType> damageTypes;
+    private final InspectionReportResponse report;
 
     public DamageInspectionResponse(
             Long id,
@@ -56,7 +57,8 @@ public class DamageInspectionResponse {
             Boolean priceAvailable,
             String priceMessage,
             List<RepairPriceDetailResponse> priceDetails,
-            List<DamageDetectionResponse> detections
+            List<DamageDetectionResponse> detections,
+            InspectionReportResponse report
     ) {
         this.id = id;
         this.vehicleId = vehicleId;
@@ -80,6 +82,7 @@ public class DamageInspectionResponse {
         this.priceMessage = priceMessage;
         this.priceDetails = priceDetails;
         this.detections = detections;
+        this.report = report;
     }
 
     public Long getId() {
@@ -169,5 +172,9 @@ public class DamageInspectionResponse {
 
     public List<DamageType> getDamageTypes() {
         return damageTypes;
+    }
+
+    public InspectionReportResponse getReport() {
+        return report;
     }
 }

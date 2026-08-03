@@ -20,6 +20,8 @@ import com.gorkem.vehicle_inspector.mapper.DamageInspectionMapper;
 import com.gorkem.vehicle_inspector.repository.DamageInspectionRepository;
 import com.gorkem.vehicle_inspector.repository.UserRepository;
 import com.gorkem.vehicle_inspector.repository.VehicleRepository;
+import com.gorkem.vehicle_inspector.dto.response.InspectionReportResponse;
+import com.gorkem.vehicle_inspector.service.report.InspectionReportProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +43,7 @@ public class DamageInspectionService {
     private final FileStorageService fileStorageService;
     private final AiAnalysisClient aiAnalysisClient;
     private final PriceEstimationService priceEstimationService;
+    private final InspectionReportProvider inspectionReportProvider;
 
     public DamageInspectionService(
             DamageInspectionRepository inspectionRepository,
@@ -48,7 +51,8 @@ public class DamageInspectionService {
             UserRepository userRepository,
             FileStorageService fileStorageService,
             AiAnalysisClient aiAnalysisClient,
-            PriceEstimationService priceEstimationService
+            PriceEstimationService priceEstimationService,
+            InspectionReportProvider inspectionReportProvider
     ) {
         this.inspectionRepository = inspectionRepository;
         this.vehicleRepository = vehicleRepository;
@@ -56,6 +60,24 @@ public class DamageInspectionService {
         this.fileStorageService = fileStorageService;
         this.aiAnalysisClient = aiAnalysisClient;
         this.priceEstimationService = priceEstimationService;
+        this.inspectionReportProvider = inspectionReportProvider;
+    }
+
+    private DamageInspectionResponse buildResponse(
+            DamageInspection inspection
+    ) {
+        InspectionReportResponse report = null;
+
+        if (inspection.getStatus() == InspectionStatus.COMPLETED) {
+            report = inspectionReportProvider.generateReport(
+                    inspection
+            );
+        }
+
+        return DamageInspectionMapper.toResponse(
+                inspection,
+                report
+        );
     }
 
     @Transactional
@@ -80,7 +102,7 @@ public class DamageInspectionService {
         DamageInspection savedInspection =
                 inspectionRepository.save(inspection);
 
-        return DamageInspectionMapper.toResponse(
+        return buildResponse(
                 savedInspection
         );
     }
@@ -96,7 +118,7 @@ public class DamageInspectionService {
                         user.getId()
                 )
                 .stream()
-                .map(DamageInspectionMapper::toResponse)
+                .map(this::buildResponse)
                 .toList();
     }
 
@@ -120,7 +142,7 @@ public class DamageInspectionService {
                                 )
                         );
 
-        return DamageInspectionMapper.toResponse(
+        return buildResponse(
                 inspection
         );
     }
@@ -173,7 +195,7 @@ public class DamageInspectionService {
         DamageInspection updatedInspection =
                 inspectionRepository.save(inspection);
 
-        return DamageInspectionMapper.toResponse(
+        return buildResponse(
                 updatedInspection
         );
     }
@@ -270,7 +292,7 @@ public class DamageInspectionService {
             DamageInspection failedInspection =
                     inspectionRepository.save(inspection);
 
-            return DamageInspectionMapper.toResponse(
+            return buildResponse(
                     failedInspection
             );
         }
@@ -278,7 +300,7 @@ public class DamageInspectionService {
         DamageInspection savedInspection =
                 inspectionRepository.save(inspection);
 
-        return DamageInspectionMapper.toResponse(
+        return buildResponse(
                 savedInspection
         );
     }

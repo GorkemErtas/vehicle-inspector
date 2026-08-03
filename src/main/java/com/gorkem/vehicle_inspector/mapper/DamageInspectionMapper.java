@@ -1,13 +1,11 @@
 package com.gorkem.vehicle_inspector.mapper;
 
-import com.gorkem.vehicle_inspector.dto.response.DamageDetectionResponse;
-import com.gorkem.vehicle_inspector.dto.response.DamageInspectionResponse;
+import com.gorkem.vehicle_inspector.dto.response.*;
 import com.gorkem.vehicle_inspector.entity.DamageInspection;
 import java.util.List;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
 import java.util.Objects;
-import com.gorkem.vehicle_inspector.dto.response.RepairPriceDetailResponse;
-import com.gorkem.vehicle_inspector.dto.response.DamageRepairRecommendationResponse;
+
 import com.gorkem.vehicle_inspector.entity.DamageType;
 
 public final class DamageInspectionMapper {
@@ -18,7 +16,8 @@ public final class DamageInspectionMapper {
     }
 
     public static DamageInspectionResponse toResponse(
-            DamageInspection inspection
+            DamageInspection inspection,
+            InspectionReportResponse report
     ) {
 
         List<DamageDetectionResponse> detections =
@@ -117,7 +116,8 @@ public final class DamageInspectionMapper {
                 inspection.getPriceAvailable(),
                 inspection.getPriceMessage(),
                 priceDetails,
-                detections
+                detections,
+                report
         );
     }
 }
