@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'register_screen.dart';
 import '../services/auth_service.dart';
-import '../../home/screens/home_screen.dart';
+import '../../home/screens/main_shell.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -51,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
-          builder: (_) => HomeScreen(
+          builder: (_) => MainShell(
             fullName: authResponse.fullName,
           ),
         ),
