@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/widgets/coming_soon_screen.dart';
 import 'home_screen.dart';
+import '../../vehicle/screens/vehicle_list_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({
@@ -22,10 +23,7 @@ class _MainShellState extends State<MainShell> {
     HomeScreen(
       fullName: widget.fullName,
     ),
-    const ComingSoonScreen(
-      title: 'Araçlar',
-      icon: Icons.directions_car_outlined,
-    ),
+    const VehicleListScreen(),
     const ComingSoonScreen(
       title: 'Analizler',
       icon: Icons.description_outlined,
