@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.gorkem.vehicle_inspector.mapper.InspectionReportMapper;
 import com.gorkem.vehicle_inspector.entity.InspectionReport;
-import com.gorkem.vehicle_inspector.service.report.OpenAiInspectionReportProvider;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -41,22 +40,19 @@ public class DamageInspectionService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final AiAnalysisClient aiAnalysisClient;
-    private final OpenAiInspectionReportProvider inspectionReportProvider;
 
     public DamageInspectionService(
             DamageInspectionRepository inspectionRepository,
             VehicleRepository vehicleRepository,
             UserRepository userRepository,
             FileStorageService fileStorageService,
-            AiAnalysisClient aiAnalysisClient,
-            OpenAiInspectionReportProvider inspectionReportProvider
+            AiAnalysisClient aiAnalysisClient
     ) {
         this.inspectionRepository = inspectionRepository;
         this.vehicleRepository = vehicleRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.aiAnalysisClient = aiAnalysisClient;
-        this.inspectionReportProvider = inspectionReportProvider;
     }
 
     private DamageInspectionResponse buildResponse(
