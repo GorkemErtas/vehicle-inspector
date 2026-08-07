@@ -5,13 +5,12 @@ import com.gorkem.vehicle_inspector.dto.response.AiAnalysisResponse;
 import com.gorkem.vehicle_inspector.dto.response.BoundingBoxResponse;
 import com.gorkem.vehicle_inspector.dto.response.DamageInspectionResponse;
 import com.gorkem.vehicle_inspector.dto.response.DetectedObjectResponse;
+import com.gorkem.vehicle_inspector.dto.response.InspectionReportResponse;
 import com.gorkem.vehicle_inspector.dto.response.RepairRecommendationResponse;
 import com.gorkem.vehicle_inspector.entity.DamageDetection;
 import com.gorkem.vehicle_inspector.entity.DamageInspection;
-import com.gorkem.vehicle_inspector.entity.DamageInspectionPriceDetail;
 import com.gorkem.vehicle_inspector.entity.DamageRepairRecommendation;
 import com.gorkem.vehicle_inspector.entity.InspectionStatus;
-import com.gorkem.vehicle_inspector.entity.RepairPrice;
 import com.gorkem.vehicle_inspector.entity.User;
 import com.gorkem.vehicle_inspector.entity.Vehicle;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
@@ -20,13 +19,13 @@ import com.gorkem.vehicle_inspector.mapper.DamageInspectionMapper;
 import com.gorkem.vehicle_inspector.repository.DamageInspectionRepository;
 import com.gorkem.vehicle_inspector.repository.UserRepository;
 import com.gorkem.vehicle_inspector.repository.VehicleRepository;
-import com.gorkem.vehicle_inspector.dto.response.InspectionReportResponse;
-import com.gorkem.vehicle_inspector.service.report.InspectionReportProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.gorkem.vehicle_inspector.mapper.InspectionReportMapper;
+import com.gorkem.vehicle_inspector.entity.InspectionReport;
+import com.gorkem.vehicle_inspector.service.report.OpenAiInspectionReportProvider;
 
-import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -42,8 +41,7 @@ public class DamageInspectionService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final AiAnalysisClient aiAnalysisClient;
-    private final PriceEstimationService priceEstimationService;
-    private final InspectionReportProvider inspectionReportProvider;
+    private final OpenAiInspectionReportProvider inspectionReportProvider;
 
     public DamageInspectionService(
             DamageInspectionRepository inspectionRepository,
@@ -51,28 +49,23 @@ public class DamageInspectionService {
             UserRepository userRepository,
             FileStorageService fileStorageService,
             AiAnalysisClient aiAnalysisClient,
-            PriceEstimationService priceEstimationService,
-            InspectionReportProvider inspectionReportProvider
+            OpenAiInspectionReportProvider inspectionReportProvider
     ) {
         this.inspectionRepository = inspectionRepository;
         this.vehicleRepository = vehicleRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.aiAnalysisClient = aiAnalysisClient;
-        this.priceEstimationService = priceEstimationService;
         this.inspectionReportProvider = inspectionReportProvider;
     }
 
     private DamageInspectionResponse buildResponse(
             DamageInspection inspection
     ) {
-        InspectionReportResponse report = null;
-
-        if (inspection.getStatus() == InspectionStatus.COMPLETED) {
-            report = inspectionReportProvider.generateReport(
-                    inspection
-            );
-        }
+        InspectionReportResponse report =
+                InspectionReportMapper.toResponse(
+                        inspection.getReport()
+                );
 
         return DamageInspectionMapper.toResponse(
                 inspection,
@@ -83,14 +76,23 @@ public class DamageInspectionService {
     @Transactional
     public DamageInspectionResponse createInspection(
             Long vehicleId,
+            String city,
             String authenticatedEmail
     ) {
-        User user = findUserByEmail(authenticatedEmail);
+        User user = findUserByEmail(
+                authenticatedEmail
+        );
 
         Vehicle vehicle = findVehicleByIdAndUserId(
                 vehicleId,
                 user.getId()
         );
+
+        if (city == null || city.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Şehir bilgisi zorunludur."
+            );
+        }
 
         DamageInspection inspection =
                 new DamageInspection(
@@ -99,19 +101,42 @@ public class DamageInspectionService {
                         InspectionStatus.PENDING
                 );
 
+        inspection.setLocationCity(
+                normalizeCity(city)
+        );
+
         DamageInspection savedInspection =
-                inspectionRepository.save(inspection);
+                inspectionRepository.save(
+                        inspection
+                );
 
         return buildResponse(
                 savedInspection
         );
     }
 
+    private String normalizeCity(
+            String city
+    ) {
+        String normalized =
+                city.trim();
+
+        if (normalized.length() > 100) {
+            throw new IllegalArgumentException(
+                    "Şehir adı en fazla 100 karakter olabilir."
+            );
+        }
+
+        return normalized;
+    }
+
     @Transactional(readOnly = true)
     public List<DamageInspectionResponse> getMyInspections(
             String authenticatedEmail
     ) {
-        User user = findUserByEmail(authenticatedEmail);
+        User user = findUserByEmail(
+                authenticatedEmail
+        );
 
         return inspectionRepository
                 .findAllByUserIdOrderByCreatedAtDesc(
@@ -127,7 +152,9 @@ public class DamageInspectionService {
             Long inspectionId,
             String authenticatedEmail
     ) {
-        User user = findUserByEmail(authenticatedEmail);
+        User user = findUserByEmail(
+                authenticatedEmail
+        );
 
         DamageInspection inspection =
                 inspectionRepository
@@ -153,7 +180,9 @@ public class DamageInspectionService {
             MultipartFile image,
             String authenticatedEmail
     ) {
-        User user = findUserByEmail(authenticatedEmail);
+        User user = findUserByEmail(
+                authenticatedEmail
+        );
 
         DamageInspection inspection =
                 inspectionRepository
@@ -169,31 +198,31 @@ public class DamageInspectionService {
                         );
 
         String storedFilename =
-                fileStorageService.storeImage(image);
+                fileStorageService.storeImage(
+                        image
+                );
 
         inspection.setImagePath(
                 "/uploads/" + storedFilename
         );
 
         inspection.clearDetections();
-        inspection.clearPriceDetails();
         inspection.clearRepairRecommendations();
+        inspection.setReport(null);
 
-        inspection.setStatus(InspectionStatus.PENDING);
+        inspection.setStatus(
+                InspectionStatus.PENDING
+        );
+
         inspection.setDamageSeverity(null);
         inspection.setConfidenceScore(null);
         inspection.setAnalysisMessage(null);
         inspection.setCompletedAt(null);
 
-        inspection.setEstimatedMinimumPrice(null);
-        inspection.setEstimatedMaximumPrice(null);
-        inspection.setPriceCurrency(null);
-        inspection.setPriceCalculatedAt(null);
-        inspection.setPriceAvailable(false);
-        inspection.setPriceMessage(null);
-
         DamageInspection updatedInspection =
-                inspectionRepository.save(inspection);
+                inspectionRepository.save(
+                        inspection
+                );
 
         return buildResponse(
                 updatedInspection
@@ -205,7 +234,9 @@ public class DamageInspectionService {
             Long inspectionId,
             String authenticatedEmail
     ) {
-        User user = findUserByEmail(authenticatedEmail);
+        User user = findUserByEmail(
+                authenticatedEmail
+        );
 
         DamageInspection inspection =
                 inspectionRepository
@@ -222,6 +253,7 @@ public class DamageInspectionService {
 
         if (inspection.getImagePath() == null
                 || inspection.getImagePath().isBlank()) {
+
             throw new IllegalStateException(
                     "Analizden önce fotoğraf yüklenmelidir."
             );
@@ -231,7 +263,9 @@ public class DamageInspectionService {
                 InspectionStatus.PROCESSING
         );
 
-        inspectionRepository.save(inspection);
+        inspectionRepository.save(
+                inspection
+        );
 
         try {
             Path storedImagePath =
@@ -245,7 +279,6 @@ public class DamageInspectionService {
                     );
 
             inspection.clearDetections();
-            inspection.clearPriceDetails();
             inspection.clearRepairRecommendations();
 
             saveDetections(
@@ -270,7 +303,14 @@ public class DamageInspectionService {
                     aiResponse.getAnalysisMessage()
             );
 
-            calculateRepairPrices(inspection);
+            InspectionReport report =
+                    inspectionReportProvider.generateReport(
+                            inspection
+                    );
+
+            inspection.setReport(
+                    report
+            );
 
             inspection.setStatus(
                     InspectionStatus.COMPLETED
@@ -281,6 +321,7 @@ public class DamageInspectionService {
             );
 
         } catch (RuntimeException exception) {
+
             inspection.setStatus(
                     InspectionStatus.FAILED
             );
@@ -290,7 +331,9 @@ public class DamageInspectionService {
             );
 
             DamageInspection failedInspection =
-                    inspectionRepository.save(inspection);
+                    inspectionRepository.save(
+                            inspection
+                    );
 
             return buildResponse(
                     failedInspection
@@ -298,7 +341,9 @@ public class DamageInspectionService {
         }
 
         DamageInspection savedInspection =
-                inspectionRepository.save(inspection);
+                inspectionRepository.save(
+                        inspection
+                );
 
         return buildResponse(
                 savedInspection
@@ -343,7 +388,9 @@ public class DamageInspectionService {
                             boundingBox.getY2()
                     );
 
-            inspection.addDetection(detection);
+            inspection.addDetection(
+                    detection
+            );
         }
     }
 
@@ -369,6 +416,7 @@ public class DamageInspectionService {
                     new LinkedHashSet<>();
 
             if (response.getAffectedParts() != null) {
+
                 response.getAffectedParts()
                         .stream()
                         .filter(Objects::nonNull)
@@ -398,174 +446,9 @@ public class DamageInspectionService {
         }
     }
 
-    private void calculateRepairPrices(
-            DamageInspection inspection
+    private User findUserByEmail(
+            String email
     ) {
-        List<DamageRepairRecommendation>
-                repairRecommendations =
-                inspection.getRepairRecommendations();
-
-        List<RepairPrice> matchingPrices =
-                priceEstimationService.findMatchingPrices(
-                        inspection.getVehicle(),
-                        repairRecommendations,
-                        inspection.getDamageSeverity()
-                );
-
-        int totalPriceConfigurationCount = 0;
-
-        for (DamageRepairRecommendation recommendation
-                : repairRecommendations) {
-
-            if (recommendation == null
-                    || recommendation.getDamageType() == null
-                    || recommendation.getRecommendedAction() == null
-                    || recommendation.getAffectedParts() == null) {
-                continue;
-            }
-
-            for (VehiclePart affectedPart
-                    : recommendation.getAffectedParts()) {
-
-                if (affectedPart == null
-                        || affectedPart
-                        == VehiclePart.UNKNOWN) {
-                    continue;
-                }
-
-                totalPriceConfigurationCount++;
-
-                RepairPrice matchingPrice =
-                        findMatchingPrice(
-                                matchingPrices,
-                                affectedPart,
-                                recommendation
-                                        .getRecommendedAction()
-                        );
-
-                DamageInspectionPriceDetail priceDetail =
-                        createPriceDetail(
-                                inspection,
-                                recommendation,
-                                affectedPart,
-                                matchingPrice
-                        );
-
-                inspection.addPriceDetail(
-                        priceDetail
-                );
-            }
-        }
-
-        BigDecimal totalMinimumPrice =
-                matchingPrices.stream()
-                        .map(
-                                RepairPrice::getMinimumPrice
-                        )
-                        .reduce(
-                                BigDecimal.ZERO,
-                                BigDecimal::add
-                        );
-
-        BigDecimal totalMaximumPrice =
-                matchingPrices.stream()
-                        .map(
-                                RepairPrice::getMaximumPrice
-                        )
-                        .reduce(
-                                BigDecimal.ZERO,
-                                BigDecimal::add
-                        );
-
-        inspection.setPriceCurrency("TRY");
-        inspection.setPriceCalculatedAt(
-                LocalDateTime.now()
-        );
-
-        if (matchingPrices.isEmpty()) {
-            inspection.setEstimatedMinimumPrice(null);
-            inspection.setEstimatedMaximumPrice(null);
-            inspection.setPriceAvailable(false);
-            inspection.setPriceMessage(
-                    "Önerilen onarım işlemleri için uygun fiyat kaydı bulunamadı."
-            );
-            return;
-        }
-
-        inspection.setEstimatedMinimumPrice(
-                totalMinimumPrice
-        );
-
-        inspection.setEstimatedMaximumPrice(
-                totalMaximumPrice
-        );
-
-        inspection.setPriceAvailable(true);
-
-        if (matchingPrices.size()
-                == totalPriceConfigurationCount) {
-            inspection.setPriceMessage(
-                    "Tüm önerilen onarım işlemleri için tahmini fiyat hesaplandı."
-            );
-        } else {
-            inspection.setPriceMessage(
-                    matchingPrices.size()
-                            + " / "
-                            + totalPriceConfigurationCount
-                            + " onarım işlemi için fiyat bulundu."
-            );
-        }
-    }
-
-    private RepairPrice findMatchingPrice(
-            List<RepairPrice> matchingPrices,
-            VehiclePart vehiclePart,
-            com.gorkem.vehicle_inspector.entity.RepairAction
-                    repairAction
-    ) {
-        return matchingPrices.stream()
-                .filter(price ->
-                        price.getVehiclePart()
-                                == vehiclePart
-                )
-                .filter(price ->
-                        price.getRepairAction()
-                                == repairAction
-                )
-                .findFirst()
-                .orElse(null);
-    }
-
-    private DamageInspectionPriceDetail createPriceDetail(
-            DamageInspection inspection,
-            DamageRepairRecommendation recommendation,
-            VehiclePart affectedPart,
-            RepairPrice matchingPrice
-    ) {
-        if (matchingPrice == null) {
-            return new DamageInspectionPriceDetail(
-                    inspection,
-                    affectedPart,
-                    recommendation.getDamageType(),
-                    recommendation.getRecommendedAction(),
-                    false,
-                    null,
-                    null
-            );
-        }
-
-        return new DamageInspectionPriceDetail(
-                inspection,
-                affectedPart,
-                recommendation.getDamageType(),
-                recommendation.getRecommendedAction(),
-                true,
-                matchingPrice.getMinimumPrice(),
-                matchingPrice.getMaximumPrice()
-        );
-    }
-
-    private User findUserByEmail(String email) {
         return userRepository
                 .findByEmail(
                         email.trim().toLowerCase()

@@ -27,11 +27,13 @@ public class DamageInspectionController {
     public ResponseEntity<DamageInspectionResponse>
     createInspection(
             @RequestParam Long vehicleId,
+            @RequestParam String city,
             Authentication authentication
     ) {
         DamageInspectionResponse response =
                 inspectionService.createInspection(
                         vehicleId,
+                        city,
                         authentication.getName()
                 );
 

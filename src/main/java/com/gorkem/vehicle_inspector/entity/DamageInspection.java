@@ -3,7 +3,6 @@ package com.gorkem.vehicle_inspector.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,10 @@ public class DamageInspection {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(
+            fetch = FetchType.LAZY,
+            optional = false
+    )
     @JoinColumn(
             name = "vehicle_id",
             nullable = false,
@@ -24,6 +26,25 @@ public class DamageInspection {
             )
     )
     private Vehicle vehicle;
+
+    @ManyToOne(
+            fetch = FetchType.LAZY,
+            optional = false
+    )
+    @JoinColumn(
+            name = "user_id",
+            nullable = false,
+            foreignKey = @ForeignKey(
+                    name = "fk_inspection_user"
+            )
+    )
+    private User user;
+
+    @Column(
+            name = "location_city",
+            length = 100
+    )
+    private String locationCity;
 
     @OneToMany(
             mappedBy = "inspection",
@@ -38,26 +59,8 @@ public class DamageInspection {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<DamageInspectionPriceDetail> priceDetails =
-            new ArrayList<>();
-
-    @OneToMany(
-            mappedBy = "inspection",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
     private List<DamageRepairRecommendation>
             repairRecommendations = new ArrayList<>();
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "user_id",
-            nullable = false,
-            foreignKey = @ForeignKey(
-                    name = "fk_inspection_user"
-            )
-    )
-    private User user;
 
     @Column(name = "image_path", length = 500)
     private String imagePath;
@@ -67,13 +70,19 @@ public class DamageInspection {
     private InspectionStatus status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "damage_severity", length = 30)
+    @Column(
+            name = "damage_severity",
+            length = 30
+    )
     private DamageSeverity damageSeverity;
 
     @Column(name = "confidence_score")
     private Double confidenceScore;
 
-    @Column(name = "analysis_message", length = 1000)
+    @Column(
+            name = "analysis_message",
+            length = 1000
+    )
     private String analysisMessage;
 
     @Column(
@@ -86,37 +95,13 @@ public class DamageInspection {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    @Column(
-            name = "estimated_minimum_price",
-            precision = 12,
-            scale = 2
+    @OneToOne(
+            mappedBy = "inspection",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
     )
-    private BigDecimal estimatedMinimumPrice;
-
-    @Column(
-            name = "estimated_maximum_price",
-            precision = 12,
-            scale = 2
-    )
-    private BigDecimal estimatedMaximumPrice;
-
-    @Column(
-            name = "price_currency",
-            length = 10
-    )
-    private String priceCurrency;
-
-    @Column(name = "price_calculated_at")
-    private LocalDateTime priceCalculatedAt;
-
-    @Column(name = "price_available")
-    private Boolean priceAvailable;
-
-    @Column(
-            name = "price_message",
-            length = 500
-    )
-    private String priceMessage;
+    private InspectionReport report;
 
     protected DamageInspection() {
     }
@@ -148,6 +133,19 @@ public class DamageInspection {
         return user;
     }
 
+    public String getLocationCity() {
+        return locationCity;
+    }
+
+    public List<DamageDetection> getDetections() {
+        return detections;
+    }
+
+    public List<DamageRepairRecommendation>
+    getRepairRecommendations() {
+        return repairRecommendations;
+    }
+
     public String getImagePath() {
         return imagePath;
     }
@@ -176,41 +174,8 @@ public class DamageInspection {
         return completedAt;
     }
 
-    public BigDecimal getEstimatedMinimumPrice() {
-        return estimatedMinimumPrice;
-    }
-
-    public BigDecimal getEstimatedMaximumPrice() {
-        return estimatedMaximumPrice;
-    }
-
-    public String getPriceCurrency() {
-        return priceCurrency;
-    }
-
-    public LocalDateTime getPriceCalculatedAt() {
-        return priceCalculatedAt;
-    }
-
-    public Boolean getPriceAvailable() {
-        return priceAvailable;
-    }
-
-    public String getPriceMessage() {
-        return priceMessage;
-    }
-
-    public List<DamageDetection> getDetections() {
-        return detections;
-    }
-
-    public List<DamageInspectionPriceDetail> getPriceDetails() {
-        return priceDetails;
-    }
-
-    public List<DamageRepairRecommendation>
-    getRepairRecommendations() {
-        return repairRecommendations;
+    public InspectionReport getReport() {
+        return report;
     }
 
     public void setVehicle(Vehicle vehicle) {
@@ -221,11 +186,19 @@ public class DamageInspection {
         this.user = user;
     }
 
+    public void setLocationCity(
+            String locationCity
+    ) {
+        this.locationCity = locationCity;
+    }
+
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
     }
 
-    public void setStatus(InspectionStatus status) {
+    public void setStatus(
+            InspectionStatus status
+    ) {
         this.status = status;
     }
 
@@ -235,52 +208,41 @@ public class DamageInspection {
         this.damageSeverity = damageSeverity;
     }
 
-    public void setConfidenceScore(Double confidenceScore) {
+    public void setConfidenceScore(
+            Double confidenceScore
+    ) {
         this.confidenceScore = confidenceScore;
     }
 
-    public void setAnalysisMessage(String analysisMessage) {
+    public void setAnalysisMessage(
+            String analysisMessage
+    ) {
         this.analysisMessage = analysisMessage;
     }
 
-    public void setCompletedAt(LocalDateTime completedAt) {
+    public void setCompletedAt(
+            LocalDateTime completedAt
+    ) {
         this.completedAt = completedAt;
     }
 
-    public void setEstimatedMinimumPrice(
-            BigDecimal estimatedMinimumPrice
+    public void setReport(
+            InspectionReport report
     ) {
-        this.estimatedMinimumPrice = estimatedMinimumPrice;
-    }
+        this.report = report;
 
-    public void setEstimatedMaximumPrice(
-            BigDecimal estimatedMaximumPrice
-    ) {
-        this.estimatedMaximumPrice = estimatedMaximumPrice;
-    }
-
-    public void setPriceCurrency(String priceCurrency) {
-        this.priceCurrency = priceCurrency;
-    }
-
-    public void setPriceCalculatedAt(
-            LocalDateTime priceCalculatedAt
-    ) {
-        this.priceCalculatedAt = priceCalculatedAt;
-    }
-
-    public void setPriceAvailable(Boolean priceAvailable) {
-        this.priceAvailable = priceAvailable;
-    }
-
-    public void setPriceMessage(String priceMessage) {
-        this.priceMessage = priceMessage;
+        if (report != null) {
+            report.setInspection(this);
+        }
     }
 
     public void addRepairRecommendation(
             DamageRepairRecommendation recommendation
     ) {
-        repairRecommendations.add(recommendation);
+        repairRecommendations.add(
+                recommendation
+        );
+
         recommendation.setInspection(this);
     }
 
@@ -293,17 +255,6 @@ public class DamageInspection {
     ) {
         detections.add(detection);
         detection.setInspection(this);
-    }
-
-    public void addPriceDetail(
-            DamageInspectionPriceDetail priceDetail
-    ) {
-        priceDetails.add(priceDetail);
-        priceDetail.setInspection(this);
-    }
-
-    public void clearPriceDetails() {
-        priceDetails.clear();
     }
 
     public void clearDetections() {

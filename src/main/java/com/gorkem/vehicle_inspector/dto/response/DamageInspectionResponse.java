@@ -4,10 +4,9 @@ import com.gorkem.vehicle_inspector.entity.DamageSeverity;
 import com.gorkem.vehicle_inspector.entity.DamageType;
 import com.gorkem.vehicle_inspector.entity.InspectionStatus;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
-import java.math.BigDecimal;
-import java.util.List;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class DamageInspectionResponse {
 
@@ -17,23 +16,24 @@ public class DamageInspectionResponse {
     private final Long userId;
     private final String imagePath;
     private final InspectionStatus status;
+
     private final DamageSeverity damageSeverity;
+    private final List<DamageType> damageTypes;
     private final List<VehiclePart> affectedParts;
-    private final List<DamageRepairRecommendationResponse> repairRecommendations;
+
+    private final List<DamageRepairRecommendationResponse>
+            repairRecommendations;
+
     private final Double confidenceScore;
     private final String analysisMessage;
+
     private final LocalDateTime createdAt;
     private final LocalDateTime completedAt;
-    private final BigDecimal estimatedMinimumPrice;
-    private final BigDecimal estimatedMaximumPrice;
-    private final String priceCurrency;
-    private final LocalDateTime priceCalculatedAt;
-    private final Boolean priceAvailable;
-    private final String priceMessage;
-    private final List<RepairPriceDetailResponse> priceDetails;
+
     private final List<DamageDetectionResponse> detections;
-    private final List<DamageType> damageTypes;
+
     private final InspectionReportResponse report;
+    private final String locationCity;
 
     public DamageInspectionResponse(
             Long id,
@@ -45,20 +45,15 @@ public class DamageInspectionResponse {
             DamageSeverity damageSeverity,
             List<DamageType> damageTypes,
             List<VehiclePart> affectedParts,
-            List<DamageRepairRecommendationResponse> repairRecommendations,
+            List<DamageRepairRecommendationResponse>
+                    repairRecommendations,
             Double confidenceScore,
             String analysisMessage,
             LocalDateTime createdAt,
             LocalDateTime completedAt,
-            BigDecimal estimatedMinimumPrice,
-            BigDecimal estimatedMaximumPrice,
-            String priceCurrency,
-            LocalDateTime priceCalculatedAt,
-            Boolean priceAvailable,
-            String priceMessage,
-            List<RepairPriceDetailResponse> priceDetails,
             List<DamageDetectionResponse> detections,
-            InspectionReportResponse report
+            InspectionReportResponse report,
+            String locationCity
     ) {
         this.id = id;
         this.vehicleId = vehicleId;
@@ -66,23 +61,23 @@ public class DamageInspectionResponse {
         this.userId = userId;
         this.imagePath = imagePath;
         this.status = status;
+
         this.damageSeverity = damageSeverity;
         this.damageTypes = damageTypes;
         this.affectedParts = affectedParts;
-        this.repairRecommendations = repairRecommendations;
+
+        this.repairRecommendations =
+                repairRecommendations;
+
         this.confidenceScore = confidenceScore;
         this.analysisMessage = analysisMessage;
+
         this.createdAt = createdAt;
         this.completedAt = completedAt;
-        this.estimatedMinimumPrice = estimatedMinimumPrice;
-        this.estimatedMaximumPrice = estimatedMaximumPrice;
-        this.priceCurrency = priceCurrency;
-        this.priceCalculatedAt = priceCalculatedAt;
-        this.priceAvailable = priceAvailable;
-        this.priceMessage = priceMessage;
-        this.priceDetails = priceDetails;
+
         this.detections = detections;
         this.report = report;
+        this.locationCity = locationCity;
     }
 
     public Long getId() {
@@ -113,8 +108,17 @@ public class DamageInspectionResponse {
         return damageSeverity;
     }
 
+    public List<DamageType> getDamageTypes() {
+        return damageTypes;
+    }
+
     public List<VehiclePart> getAffectedParts() {
         return affectedParts;
+    }
+
+    public List<DamageRepairRecommendationResponse>
+    getRepairRecommendations() {
+        return repairRecommendations;
     }
 
     public Double getConfidenceScore() {
@@ -133,48 +137,15 @@ public class DamageInspectionResponse {
         return completedAt;
     }
 
-    public BigDecimal getEstimatedMinimumPrice() {
-        return estimatedMinimumPrice;
-    }
-
-    public BigDecimal getEstimatedMaximumPrice() {
-        return estimatedMaximumPrice;
-    }
-
-    public String getPriceCurrency() {
-        return priceCurrency;
-    }
-
-    public LocalDateTime getPriceCalculatedAt() {
-        return priceCalculatedAt;
-    }
-
-    public Boolean getPriceAvailable() {
-        return priceAvailable;
-    }
-
-    public String getPriceMessage() {
-        return priceMessage;
-    }
-
-    public List<RepairPriceDetailResponse> getPriceDetails() {
-        return priceDetails;
-    }
-
     public List<DamageDetectionResponse> getDetections() {
         return detections;
     }
 
-    public List<DamageRepairRecommendationResponse>
-    getRepairRecommendations() {
-        return repairRecommendations;
-    }
-
-    public List<DamageType> getDamageTypes() {
-        return damageTypes;
-    }
-
     public InspectionReportResponse getReport() {
         return report;
+    }
+
+    public String getLocationCity() {
+        return locationCity;
     }
 }
