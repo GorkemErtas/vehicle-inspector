@@ -1,6 +1,9 @@
 package com.gorkem.vehicle_inspector.mapper;
 
-import com.gorkem.vehicle_inspector.dto.response.*;
+import com.gorkem.vehicle_inspector.dto.response.DamageDetectionResponse;
+import com.gorkem.vehicle_inspector.dto.response.DamageInspectionResponse;
+import com.gorkem.vehicle_inspector.dto.response.DamageRepairRecommendationResponse;
+import com.gorkem.vehicle_inspector.dto.response.InspectionReportResponse;
 import com.gorkem.vehicle_inspector.entity.DamageInspection;
 import com.gorkem.vehicle_inspector.entity.DamageType;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
@@ -46,9 +49,8 @@ public final class DamageInspectionMapper {
                                         && detection.getConfidence()
                                         >= AFFECTED_PART_CONFIDENCE_THRESHOLD
                         )
-                        .map(
-                                detection ->
-                                        detection.getAffectedPart()
+                        .map(detection ->
+                                detection.getAffectedPart()
                         )
                         .filter(Objects::nonNull)
                         .filter(part ->
@@ -64,12 +66,9 @@ public final class DamageInspectionMapper {
                         .map(recommendation ->
                                 new DamageRepairRecommendationResponse(
                                         recommendation.getDamageType(),
-                                        recommendation
-                                                .getRecommendedAction(),
-                                        recommendation
-                                                .getPartReplacementRequired(),
-                                        recommendation
-                                                .getAffectedParts()
+                                        recommendation.getRecommendedAction(),
+                                        recommendation.getPartReplacementRequired(),
+                                        recommendation.getAffectedParts()
                                                 .stream()
                                                 .toList()
                                 )
@@ -93,7 +92,6 @@ public final class DamageInspectionMapper {
                 inspection.getVehicle().getPlate(),
                 inspection.getUser().getId(),
                 inspection.getImagePath(),
-                inspection.getLocationCity(),
                 inspection.getStatus(),
                 inspection.getDamageSeverity(),
                 damageTypes,
@@ -104,7 +102,8 @@ public final class DamageInspectionMapper {
                 inspection.getCreatedAt(),
                 inspection.getCompletedAt(),
                 detections,
-                report
+                report,
+                inspection.getLocationCity()
         );
     }
 }
