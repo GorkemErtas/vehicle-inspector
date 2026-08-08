@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.gorkem.vehicle_inspector.mapper.InspectionReportMapper;
 import com.gorkem.vehicle_inspector.entity.InspectionReport;
+import com.gorkem.vehicle_inspector.service.report.GeminiInspectionReportService;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -40,19 +41,22 @@ public class DamageInspectionService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final AiAnalysisClient aiAnalysisClient;
+    private final GeminiInspectionReportService geminiInspectionReportService;
 
     public DamageInspectionService(
             DamageInspectionRepository inspectionRepository,
             VehicleRepository vehicleRepository,
             UserRepository userRepository,
             FileStorageService fileStorageService,
-            AiAnalysisClient aiAnalysisClient
+            AiAnalysisClient aiAnalysisClient,
+            GeminiInspectionReportService geminiInspectionReportService
     ) {
         this.inspectionRepository = inspectionRepository;
         this.vehicleRepository = vehicleRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.aiAnalysisClient = aiAnalysisClient;
+        this.geminiInspectionReportService = geminiInspectionReportService;
     }
 
     private DamageInspectionResponse buildResponse(
@@ -299,14 +303,25 @@ public class DamageInspectionService {
                     aiResponse.getAnalysisMessage()
             );
 
-            InspectionReport report =
-                    inspectionReportProvider.generateReport(
-                            inspection
-                    );
+            try {
+                InspectionReport report =
+                        geminiInspectionReportService.generateReport(
+                                inspection
+                        );
 
-            inspection.setReport(
-                    report
-            );
+                inspection.setReport(report);
+
+            } catch (RuntimeException exception) {
+
+                System.err.println(
+                        "GEMINI ERROR: "
+                                + exception.getMessage()
+                );
+
+                exception.printStackTrace();
+
+                inspection.setReport(null);
+            }
 
             inspection.setStatus(
                     InspectionStatus.COMPLETED

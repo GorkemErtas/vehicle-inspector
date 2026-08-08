@@ -13,6 +13,7 @@ public final class InspectionReportPromptBuilder {
     public static String build(
             InspectionLlmRequest request
     ) {
+
         String damageText =
                 request.damages()
                         .stream()
@@ -25,45 +26,103 @@ public final class InspectionReportPromptBuilder {
                         );
 
         return """
-                Bir araç hasar inceleme uygulaması için
-                kullanıcıya gösterilecek Türkçe raporu oluştur.
+                Vehicle Inspector uygulaması için
+                kullanıcıya gösterilecek Türkçe bir
+                araç hasar raporu oluştur.
 
-                ML tarafından sağlanan hasar bilgilerini
-                gerçek kabul et. Yeni hasar türleri uydurma.
+                Hasarın kendisi hakkında yalnızca
+                ML sisteminin sağladığı bilgileri kullan.
 
-                Araç:
+                ML tarafından belirtilmeyen yeni bir
+                hasar türü, araç parçası veya hasar
+                seviyesi uydurma.
+
+                ARAÇ BİLGİLERİ
+
                 Marka: %s
                 Model: %s
                 Model yılı: %d
                 Kilometre: %d
 
-                İnceleme şehri: %s
-                İnceleme tarihi: %s
+                KONUM
 
-                Genel hasar seviyesi: %s
+                Şehir: %s
+                Analiz tarihi: %s
+
+                ML ANALİZİ
+
+                Hasar seviyesi: %s
                 Güven skoru: %s
 
                 ML analiz mesajı:
                 %s
 
-                Hasarlar:
+                HASARLAR
+
                 %s
 
-                Görevlerin:
+                GÖREV
 
-                1. ML sonuçlarını kullanıcı dostu Türkçe ile açıkla.
-                2. Önerilen onarım işlemlerini açıkla.
-                3. Web aramasını kullanarak %s şehrindeki güncel
-                   Türkiye otomotiv servis ve onarım fiyatlarını araştır.
-                4. Araç marka, model, model yılı, hasarlı parça,
-                   hasar türü ve önerilen işlemleri dikkate al.
-                5. Makul bir minimum ve maksimum fiyat aralığı üret.
-                6. İnternette yeterli güvenilir fiyat bilgisi yoksa
-                   kesin fiyat uydurma; geniş ve temkinli bir aralık kullan.
-                7. Fiyatın servis, kullanılan parça, işçilik ve hasarın
-                   gerçek durumuna göre değişebileceğini belirt.
-                8. Para birimi TRY olsun.
-                9. Nihai rapor Türkçe olsun.
+                1. ML sonuçlarını kullanıcı dostu ve
+                   anlaşılır Türkçe ile açıkla.
+
+                2. ML tarafından önerilen onarım
+                   işlemlerini açıkla.
+
+                3. Google Search kullanarak özellikle
+                   %s şehrindeki güncel Türkiye
+                   otomotiv servis, kaporta, boya,
+                   parça ve işçilik fiyatlarını araştır.
+
+                4. Fiyat tahmininde şunları dikkate al:
+
+                   - araç markası
+                   - araç modeli
+                   - model yılı
+                   - kilometre
+                   - hasarlı parçalar
+                   - hasar türleri
+                   - hasar seviyesi
+                   - önerilen onarım işlemleri
+                   - parça değişimi gerekip gerekmediği
+                   - seçilen şehir
+                   - güncel işçilik ve parça fiyatları
+
+                5. estimatedMinimumPrice ve
+                   estimatedMaximumPrice alanları,
+                   rapordaki TÜM hasarların tahmini
+                   TOPLAM onarım maliyetini temsil etsin.
+
+                6. Fiyatları %s şehrindeki güncel
+                   piyasa koşullarına göre belirle.
+
+                7. Yeterli doğrudan fiyat verisi
+                   bulunamazsa benzer servis,
+                   kaporta, boya veya parça fiyatlarını
+                   kullanarak temkinli bir aralık oluştur.
+
+                8. Güvenilir veri olmadan aşırı kesin
+                   bir rakam üretme.
+
+                9. Minimum fiyat maksimum fiyattan
+                   büyük olamaz.
+
+                10. Para birimi her zaman TRY olsun.
+
+                11. priceInformation alanında fiyatın
+                    neden bu aralıkta olduğunu açıkla.
+
+                12. priceSourceDescription alanında
+                    fiyat tahmini için kullanılan
+                    güncel kaynak türlerini kısaca açıkla.
+
+                13. Bunun kesin servis teklifi değil,
+                    yaklaşık piyasa tahmini olduğunu
+                    disclaimer alanında açıkça belirt.
+
+                14. Nihai rapor tamamen Türkçe olsun.
+
+                JSON dışında ek açıklama üretme.
                 """
                 .formatted(
                         request.vehicle().brand(),
@@ -76,6 +135,7 @@ public final class InspectionReportPromptBuilder {
                         request.confidenceScore(),
                         request.analysisMessage(),
                         damageText,
+                        request.city(),
                         request.city()
                 );
     }
