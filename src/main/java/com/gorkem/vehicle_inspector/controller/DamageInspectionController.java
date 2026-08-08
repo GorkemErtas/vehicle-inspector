@@ -101,4 +101,18 @@ public class DamageInspectionController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/{inspectionId}/report")
+    public ResponseEntity<DamageInspectionResponse>
+    regenerateReport(
+            @PathVariable Long inspectionId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                inspectionService.regenerateReport(
+                        inspectionId,
+                        authentication.getName()
+                )
+        );
+    }
 }

@@ -103,6 +103,19 @@ public class DamageInspection {
     )
     private InspectionReport report;
 
+    @Enumerated(EnumType.STRING)
+    @Column(
+            name = "report_status",
+            length = 30
+    )
+    private ReportStatus reportStatus;
+
+    @Column(
+            name = "report_message",
+            length = 1000
+    )
+    private String reportMessage;
+
     protected DamageInspection() {
     }
 
@@ -178,6 +191,14 @@ public class DamageInspection {
         return report;
     }
 
+    public ReportStatus getReportStatus() {
+        return reportStatus;
+    }
+
+    public String getReportMessage() {
+        return reportMessage;
+    }
+
     public void setVehicle(Vehicle vehicle) {
         this.vehicle = vehicle;
     }
@@ -234,6 +255,18 @@ public class DamageInspection {
         if (report != null) {
             report.setInspection(this);
         }
+    }
+
+    public void setReportStatus(
+            ReportStatus reportStatus
+    ) {
+        this.reportStatus = reportStatus;
+    }
+
+    public void setReportMessage(
+            String reportMessage
+    ) {
+        this.reportMessage = reportMessage;
     }
 
     public void addRepairRecommendation(

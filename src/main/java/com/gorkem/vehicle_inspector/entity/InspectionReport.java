@@ -183,4 +183,41 @@ public class InspectionReport {
     ) {
         this.inspection = inspection;
     }
+
+    public void updateFrom(
+            InspectionReport source
+    ) {
+        if (source == null) {
+            throw new IllegalArgumentException(
+                    "Güncellenecek rapor boş olamaz."
+            );
+        }
+
+        this.title = source.getTitle();
+        this.summary = source.getSummary();
+        this.damageDescription =
+                source.getDamageDescription();
+        this.repairRecommendation =
+                source.getRepairRecommendation();
+
+        this.estimatedMinimumPrice =
+                source.getEstimatedMinimumPrice();
+
+        this.estimatedMaximumPrice =
+                source.getEstimatedMaximumPrice();
+
+        this.currency = source.getCurrency();
+
+        this.priceInformation =
+                source.getPriceInformation();
+
+        this.priceSourceDescription =
+                source.getPriceSourceDescription();
+
+        this.disclaimer =
+                source.getDisclaimer();
+
+        this.generatedAt =
+                LocalDateTime.now();
+    }
 }

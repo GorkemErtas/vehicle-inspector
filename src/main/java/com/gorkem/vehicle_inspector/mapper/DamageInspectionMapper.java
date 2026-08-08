@@ -93,6 +93,8 @@ public final class DamageInspectionMapper {
                 inspection.getUser().getId(),
                 inspection.getImagePath(),
                 inspection.getStatus(),
+                inspection.getReportStatus(),
+                inspection.getReportMessage(),
                 inspection.getDamageSeverity(),
                 damageTypes,
                 affectedParts,

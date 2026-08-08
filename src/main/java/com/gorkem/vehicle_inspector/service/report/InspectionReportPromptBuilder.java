@@ -69,10 +69,9 @@ public final class InspectionReportPromptBuilder {
                 2. ML tarafından önerilen onarım
                    işlemlerini açıkla.
 
-                3. Google Search kullanarak özellikle
-                   %s şehrindeki güncel Türkiye
-                   otomotiv servis, kaporta, boya,
-                   parça ve işçilik fiyatlarını araştır.
+                3. Tahmini onarım maliyetini oluştururken
+                   seçilen şehir olan %s için genel
+                   piyasa koşullarını dikkate al.
 
                 4. Fiyat tahmininde şunları dikkate al:
 
@@ -86,23 +85,21 @@ public final class InspectionReportPromptBuilder {
                    - önerilen onarım işlemleri
                    - parça değişimi gerekip gerekmediği
                    - seçilen şehir
-                   - güncel işçilik ve parça fiyatları
+                   - tipik parça ve işçilik maliyetleri
 
                 5. estimatedMinimumPrice ve
                    estimatedMaximumPrice alanları,
                    rapordaki TÜM hasarların tahmini
                    TOPLAM onarım maliyetini temsil etsin.
 
-                6. Fiyatları %s şehrindeki güncel
-                   piyasa koşullarına göre belirle.
+                6. Minimum ve maksimum fiyat arasındaki
+                   fark 10.000 TRY'den fazla olmasın.
 
-                7. Yeterli doğrudan fiyat verisi
-                   bulunamazsa benzer servis,
-                   kaporta, boya veya parça fiyatlarını
-                   kullanarak temkinli bir aralık oluştur.
+                7. Fiyat aralığını mümkün olduğunca
+                   gerçekçi ve dar tut.
 
-                8. Güvenilir veri olmadan aşırı kesin
-                   bir rakam üretme.
+                8. Kesin bir fiyat bilgin yoksa
+                   aşırı kesin rakamlar üretme.
 
                 9. Minimum fiyat maksimum fiyattan
                    büyük olamaz.
@@ -113,10 +110,13 @@ public final class InspectionReportPromptBuilder {
                     neden bu aralıkta olduğunu açıkla.
 
                 12. priceSourceDescription alanında
-                    fiyat tahmini için kullanılan
-                    güncel kaynak türlerini kısaca açıkla.
+                    canlı web verisi kullanılmadığını,
+                    tahminin araç bilgileri, hasar türü,
+                    seçilen şehir ve genel piyasa
+                    koşullarına göre oluşturulduğunu açıkla.
 
                 13. Bunun kesin servis teklifi değil,
+                    yapay zeka tarafından oluşturulan
                     yaklaşık piyasa tahmini olduğunu
                     disclaimer alanında açıkça belirt.
 
@@ -135,7 +135,6 @@ public final class InspectionReportPromptBuilder {
                         request.confidenceScore(),
                         request.analysisMessage(),
                         damageText,
-                        request.city(),
                         request.city()
                 );
     }

@@ -4,6 +4,7 @@ import com.gorkem.vehicle_inspector.entity.DamageSeverity;
 import com.gorkem.vehicle_inspector.entity.DamageType;
 import com.gorkem.vehicle_inspector.entity.InspectionStatus;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
+import com.gorkem.vehicle_inspector.entity.ReportStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,6 +36,9 @@ public class DamageInspectionResponse {
     private final InspectionReportResponse report;
     private final String locationCity;
 
+    private final ReportStatus reportStatus;
+    private final String reportMessage;
+
     public DamageInspectionResponse(
             Long id,
             Long vehicleId,
@@ -42,11 +46,12 @@ public class DamageInspectionResponse {
             Long userId,
             String imagePath,
             InspectionStatus status,
+            ReportStatus reportStatus,
+            String reportMessage,
             DamageSeverity damageSeverity,
             List<DamageType> damageTypes,
             List<VehiclePart> affectedParts,
-            List<DamageRepairRecommendationResponse>
-                    repairRecommendations,
+            List<DamageRepairRecommendationResponse> repairRecommendations,
             Double confidenceScore,
             String analysisMessage,
             LocalDateTime createdAt,
@@ -61,6 +66,8 @@ public class DamageInspectionResponse {
         this.userId = userId;
         this.imagePath = imagePath;
         this.status = status;
+        this.reportStatus = reportStatus;
+        this.reportMessage = reportMessage;
 
         this.damageSeverity = damageSeverity;
         this.damageTypes = damageTypes;
@@ -102,6 +109,14 @@ public class DamageInspectionResponse {
 
     public InspectionStatus getStatus() {
         return status;
+    }
+
+    public ReportStatus getReportStatus() {
+        return reportStatus;
+    }
+
+    public String getReportMessage() {
+        return reportMessage;
     }
 
     public DamageSeverity getDamageSeverity() {

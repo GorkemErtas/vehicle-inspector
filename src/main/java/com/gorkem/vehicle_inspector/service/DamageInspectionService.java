@@ -10,21 +10,22 @@ import com.gorkem.vehicle_inspector.dto.response.RepairRecommendationResponse;
 import com.gorkem.vehicle_inspector.entity.DamageDetection;
 import com.gorkem.vehicle_inspector.entity.DamageInspection;
 import com.gorkem.vehicle_inspector.entity.DamageRepairRecommendation;
+import com.gorkem.vehicle_inspector.entity.InspectionReport;
 import com.gorkem.vehicle_inspector.entity.InspectionStatus;
+import com.gorkem.vehicle_inspector.entity.ReportStatus;
 import com.gorkem.vehicle_inspector.entity.User;
 import com.gorkem.vehicle_inspector.entity.Vehicle;
 import com.gorkem.vehicle_inspector.entity.VehiclePart;
 import com.gorkem.vehicle_inspector.exception.ResourceNotFoundException;
 import com.gorkem.vehicle_inspector.mapper.DamageInspectionMapper;
+import com.gorkem.vehicle_inspector.mapper.InspectionReportMapper;
 import com.gorkem.vehicle_inspector.repository.DamageInspectionRepository;
 import com.gorkem.vehicle_inspector.repository.UserRepository;
 import com.gorkem.vehicle_inspector.repository.VehicleRepository;
+import com.gorkem.vehicle_inspector.service.report.GeminiInspectionReportService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import com.gorkem.vehicle_inspector.mapper.InspectionReportMapper;
-import com.gorkem.vehicle_inspector.entity.InspectionReport;
-import com.gorkem.vehicle_inspector.service.report.GeminiInspectionReportService;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -41,7 +42,8 @@ public class DamageInspectionService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final AiAnalysisClient aiAnalysisClient;
-    private final GeminiInspectionReportService geminiInspectionReportService;
+    private final GeminiInspectionReportService
+            geminiInspectionReportService;
 
     public DamageInspectionService(
             DamageInspectionRepository inspectionRepository,
@@ -49,14 +51,26 @@ public class DamageInspectionService {
             UserRepository userRepository,
             FileStorageService fileStorageService,
             AiAnalysisClient aiAnalysisClient,
-            GeminiInspectionReportService geminiInspectionReportService
+            GeminiInspectionReportService
+                    geminiInspectionReportService
     ) {
-        this.inspectionRepository = inspectionRepository;
-        this.vehicleRepository = vehicleRepository;
-        this.userRepository = userRepository;
-        this.fileStorageService = fileStorageService;
-        this.aiAnalysisClient = aiAnalysisClient;
-        this.geminiInspectionReportService = geminiInspectionReportService;
+        this.inspectionRepository =
+                inspectionRepository;
+
+        this.vehicleRepository =
+                vehicleRepository;
+
+        this.userRepository =
+                userRepository;
+
+        this.fileStorageService =
+                fileStorageService;
+
+        this.aiAnalysisClient =
+                aiAnalysisClient;
+
+        this.geminiInspectionReportService =
+                geminiInspectionReportService;
     }
 
     private DamageInspectionResponse buildResponse(
@@ -83,10 +97,11 @@ public class DamageInspectionService {
                 authenticatedEmail
         );
 
-        Vehicle vehicle = findVehicleByIdAndUserId(
-                vehicleId,
-                user.getId()
-        );
+        Vehicle vehicle =
+                findVehicleByIdAndUserId(
+                        vehicleId,
+                        user.getId()
+                );
 
         if (city == null || city.isBlank()) {
             throw new IllegalArgumentException(
@@ -105,6 +120,12 @@ public class DamageInspectionService {
                 normalizeCity(city)
         );
 
+        inspection.setReportStatus(
+                ReportStatus.PENDING
+        );
+
+        inspection.setReportMessage(null);
+
         DamageInspection savedInspection =
                 inspectionRepository.save(
                         inspection
@@ -115,23 +136,9 @@ public class DamageInspectionService {
         );
     }
 
-    private String normalizeCity(
-            String city
-    ) {
-        String normalized =
-                city.trim();
-
-        if (normalized.length() > 100) {
-            throw new IllegalArgumentException(
-                    "Şehir adı en fazla 100 karakter olabilir."
-            );
-        }
-
-        return normalized;
-    }
-
     @Transactional(readOnly = true)
-    public List<DamageInspectionResponse> getMyInspections(
+    public List<DamageInspectionResponse>
+    getMyInspections(
             String authenticatedEmail
     ) {
         User user = findUserByEmail(
@@ -148,7 +155,8 @@ public class DamageInspectionService {
     }
 
     @Transactional(readOnly = true)
-    public DamageInspectionResponse getMyInspectionById(
+    public DamageInspectionResponse
+    getMyInspectionById(
             Long inspectionId,
             String authenticatedEmail
     ) {
@@ -157,17 +165,10 @@ public class DamageInspectionService {
         );
 
         DamageInspection inspection =
-                inspectionRepository
-                        .findByIdAndUserId(
-                                inspectionId,
-                                user.getId()
-                        )
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Hasar incelemesi bulunamadı. ID: "
-                                                + inspectionId
-                                )
-                        );
+                findInspectionByIdAndUserId(
+                        inspectionId,
+                        user.getId()
+                );
 
         return buildResponse(
                 inspection
@@ -185,17 +186,10 @@ public class DamageInspectionService {
         );
 
         DamageInspection inspection =
-                inspectionRepository
-                        .findByIdAndUserId(
-                                inspectionId,
-                                user.getId()
-                        )
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Hasar incelemesi bulunamadı. ID: "
-                                                + inspectionId
-                                )
-                        );
+                findInspectionByIdAndUserId(
+                        inspectionId,
+                        user.getId()
+                );
 
         String storedFilename =
                 fileStorageService.storeImage(
@@ -208,7 +202,14 @@ public class DamageInspectionService {
 
         inspection.clearDetections();
         inspection.clearRepairRecommendations();
+
         inspection.setReport(null);
+
+        inspection.setReportStatus(
+                ReportStatus.PENDING
+        );
+
+        inspection.setReportMessage(null);
 
         inspection.setStatus(
                 InspectionStatus.PENDING
@@ -239,25 +240,14 @@ public class DamageInspectionService {
         );
 
         DamageInspection inspection =
-                inspectionRepository
-                        .findByIdAndUserId(
-                                inspectionId,
-                                user.getId()
-                        )
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Hasar incelemesi bulunamadı. ID: "
-                                                + inspectionId
-                                )
-                        );
+                findInspectionByIdAndUserId(
+                        inspectionId,
+                        user.getId()
+                );
 
-        if (inspection.getImagePath() == null
-                || inspection.getImagePath().isBlank()) {
-
-            throw new IllegalStateException(
-                    "Analizden önce fotoğraf yüklenmelidir."
-            );
-        }
+        validateImageExists(
+                inspection
+        );
 
         inspection.setStatus(
                 InspectionStatus.PROCESSING
@@ -303,25 +293,9 @@ public class DamageInspectionService {
                     aiResponse.getAnalysisMessage()
             );
 
-            try {
-                InspectionReport report =
-                        geminiInspectionReportService.generateReport(
-                                inspection
-                        );
-
-                inspection.setReport(report);
-
-            } catch (RuntimeException exception) {
-
-                System.err.println(
-                        "GEMINI ERROR: "
-                                + exception.getMessage()
-                );
-
-                exception.printStackTrace();
-
-                inspection.setReport(null);
-            }
+            generateOrUpdateReport(
+                    inspection
+            );
 
             inspection.setStatus(
                     InspectionStatus.COMPLETED
@@ -361,6 +335,120 @@ public class DamageInspectionService {
         );
     }
 
+    @Transactional
+    public DamageInspectionResponse regenerateReport(
+            Long inspectionId,
+            String authenticatedEmail
+    ) {
+        User user = findUserByEmail(
+                authenticatedEmail
+        );
+
+        DamageInspection inspection =
+                findInspectionByIdAndUserId(
+                        inspectionId,
+                        user.getId()
+                );
+
+        if (inspection.getStatus()
+                != InspectionStatus.COMPLETED) {
+
+            throw new IllegalStateException(
+                    "Rapor oluşturmak için ML analizi "
+                            + "tamamlanmış olmalıdır."
+            );
+        }
+
+        if (inspection.getDamageSeverity() == null) {
+            throw new IllegalStateException(
+                    "İncelemeye ait ML analiz sonucu "
+                            + "bulunamadı."
+            );
+        }
+
+        generateOrUpdateReport(
+                inspection
+        );
+
+        DamageInspection savedInspection =
+                inspectionRepository.save(
+                        inspection
+                );
+
+        return buildResponse(
+                savedInspection
+        );
+    }
+
+    private void generateOrUpdateReport(
+            DamageInspection inspection
+    ) {
+        inspection.setReportStatus(
+                ReportStatus.PROCESSING
+        );
+
+        inspection.setReportMessage(null);
+
+        try {
+            InspectionReport generatedReport =
+                    geminiInspectionReportService
+                            .generateReport(
+                                    inspection
+                            );
+
+            InspectionReport existingReport =
+                    inspection.getReport();
+
+            if (existingReport == null) {
+
+                inspection.setReport(
+                        generatedReport
+                );
+
+            } else {
+
+                existingReport.updateFrom(
+                        generatedReport
+                );
+            }
+
+            inspection.setReportStatus(
+                    ReportStatus.COMPLETED
+            );
+
+            inspection.setReportMessage(null);
+
+        } catch (RuntimeException exception) {
+
+            System.err.println(
+                    "GEMINI ERROR: "
+                            + exception.getMessage()
+            );
+
+            inspection.setReportStatus(
+                    ReportStatus.FAILED
+            );
+
+            inspection.setReportMessage(
+                    "AI raporu şu anda oluşturulamadı."
+            );
+        }
+    }
+
+    private void validateImageExists(
+            DamageInspection inspection
+    ) {
+        if (inspection.getImagePath() == null
+                || inspection.getImagePath()
+                .isBlank()) {
+
+            throw new IllegalStateException(
+                    "Analizden önce fotoğraf "
+                            + "yüklenmelidir."
+            );
+        }
+    }
+
     private void saveDetections(
             DamageInspection inspection,
             List<DetectedObjectResponse> detections
@@ -373,17 +461,21 @@ public class DamageInspectionService {
                 : detections) {
 
             if (detectedObject == null
-                    || detectedObject.getBoundingBox() == null) {
+                    || detectedObject
+                    .getBoundingBox() == null) {
+
                 continue;
             }
 
             BoundingBoxResponse boundingBox =
-                    detectedObject.getBoundingBox();
+                    detectedObject
+                            .getBoundingBox();
 
             if (boundingBox.getX1() == null
                     || boundingBox.getY1() == null
                     || boundingBox.getX2() == null
                     || boundingBox.getY2() == null) {
+
                 continue;
             }
 
@@ -391,8 +483,10 @@ public class DamageInspectionService {
                     new DamageDetection(
                             inspection,
                             detectedObject.getLabel(),
-                            detectedObject.getConfidence(),
-                            detectedObject.getAffectedPart(),
+                            detectedObject
+                                    .getConfidence(),
+                            detectedObject
+                                    .getAffectedPart(),
                             boundingBox.getX1(),
                             boundingBox.getY1(),
                             boundingBox.getX2(),
@@ -419,7 +513,9 @@ public class DamageInspectionService {
 
             if (response == null
                     || response.getDamageType() == null
-                    || response.getRecommendedAction() == null) {
+                    || response
+                    .getRecommendedAction() == null) {
+
                 continue;
             }
 
@@ -432,7 +528,8 @@ public class DamageInspectionService {
                         .stream()
                         .filter(Objects::nonNull)
                         .filter(part ->
-                                part != VehiclePart.UNKNOWN
+                                part
+                                        != VehiclePart.UNKNOWN
                         )
                         .forEach(
                                 recommendationParts::add
@@ -443,7 +540,8 @@ public class DamageInspectionService {
                     new DamageRepairRecommendation(
                             inspection,
                             response.getDamageType(),
-                            response.getRecommendedAction(),
+                            response
+                                    .getRecommendedAction(),
                             Boolean.TRUE.equals(
                                     response
                                             .getPartReplacementRequired()
@@ -462,11 +560,31 @@ public class DamageInspectionService {
     ) {
         return userRepository
                 .findByEmail(
-                        email.trim().toLowerCase()
+                        email.trim()
+                                .toLowerCase()
                 )
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Kullanıcı bulunamadı."
+                        )
+                );
+    }
+
+    private DamageInspection
+    findInspectionByIdAndUserId(
+            Long inspectionId,
+            Long userId
+    ) {
+        return inspectionRepository
+                .findByIdAndUserId(
+                        inspectionId,
+                        userId
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Hasar incelemesi "
+                                        + "bulunamadı. ID: "
+                                        + inspectionId
                         )
                 );
     }
@@ -486,5 +604,21 @@ public class DamageInspectionService {
                                         + vehicleId
                         )
                 );
+    }
+
+    private String normalizeCity(
+            String city
+    ) {
+        String normalized =
+                city.trim();
+
+        if (normalized.length() > 100) {
+            throw new IllegalArgumentException(
+                    "Şehir adı en fazla "
+                            + "100 karakter olabilir."
+            );
+        }
+
+        return normalized;
     }
 }

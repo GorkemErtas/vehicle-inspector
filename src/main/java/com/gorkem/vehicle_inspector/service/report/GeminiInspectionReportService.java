@@ -7,8 +7,6 @@ import com.google.genai.types.Type;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
-import com.google.genai.types.GoogleSearch;
-import com.google.genai.types.Tool;
 import com.gorkem.vehicle_inspector.dto.llm.InspectionLlmRequest;
 import com.gorkem.vehicle_inspector.dto.llm.LlmInspectionReportResult;
 import com.gorkem.vehicle_inspector.entity.DamageInspection;
@@ -50,19 +48,8 @@ public class GeminiInspectionReportService {
                         request
                 );
 
-        /* Gemini Paid Plan
-        Tool googleSearchTool =
-                Tool.builder()
-                        .googleSearch(
-                                GoogleSearch.builder()
-                                        .build()
-                        )
-                        .build();  */
-
         GenerateContentConfig config =
                 GenerateContentConfig.builder()
-                        /* Gemini Paid Plan
-                        .tools(googleSearchTool) */
                         .responseMimeType(
                                 "application/json"
                         )
