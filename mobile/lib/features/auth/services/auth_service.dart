@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import '../../../core/constants/api_constants.dart';
 import '../../../core/storage/token_storage.dart';
 import '../models/auth_response.dart';
+import '../../../core/network/api_client.dart';
+import '../models/user_profile.dart';
 
 class AuthService {
   const AuthService();
@@ -111,5 +113,21 @@ class AuthService {
         _extractErrorMessage(response),
       );
     }
+  }
+
+  Future<UserProfile> getCurrentUser() async {
+    const apiClient = ApiClient();
+
+    final response = await apiClient.get(
+      '/auth/me',
+    );
+
+    if (response is! Map<String, dynamic>) {
+      throw const FormatException(
+        'Kullanıcı bilgileri alınamadı.',
+      );
+    }
+
+    return UserProfile.fromJson(response);
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
-import 'features/auth/screens/login_screen.dart';
+import 'features/auth/screens/splash_screen.dart';
 
 void main() {
   runApp(const VehicleInspectorApp());
@@ -16,7 +16,7 @@ class VehicleInspectorApp extends StatelessWidget {
       title: 'Vehicle Inspector',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const LoginScreen(),
+      home: const SplashScreen(),
     );
   }
 }
