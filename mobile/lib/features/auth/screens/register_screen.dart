@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -14,6 +15,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordConfirmController = TextEditingController();
+  final AuthService _authService = const AuthService();
 
   bool _obscurePassword = true;
   bool _obscurePasswordConfirm = true;
@@ -39,17 +41,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _isLoading = true;
     });
 
-    await Future<void>.delayed(
-      const Duration(milliseconds: 800),
-    );
+    try {
+      await _authService.register(
+        fullName: _fullNameController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
 
-    if (!mounted) {
-      return;
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Hesabınız oluşturuldu. Şimdi giriş yapabilirsiniz.',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+      Navigator.of(context).pop();
+
+    } catch (exception) {
+      if (!mounted) {
+        return;
+      }
+
+      final message = exception
+          .toString()
+          .replaceFirst('Exception: ', '');
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(message),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
-
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   @override

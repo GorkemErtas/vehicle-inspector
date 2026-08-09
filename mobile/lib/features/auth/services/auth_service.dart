@@ -87,4 +87,29 @@ class AuthService {
 
     return 'Giriş işlemi tamamlanamadı.';
   }
+
+  Future<void> register({
+    required String fullName,
+    required String email,
+    required String password,
+  }) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.registerEndpoint),
+      headers: const {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'fullName': fullName.trim(),
+        'email': email.trim().toLowerCase(),
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode < 200 ||
+        response.statusCode >= 300) {
+      throw Exception(
+        _extractErrorMessage(response),
+      );
+    }
+  }
 }
