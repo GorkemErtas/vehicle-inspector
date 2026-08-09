@@ -33,6 +33,45 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  Future<dynamic> postMultipart(
+      String path, {
+        required String filePath,
+        String fileFieldName = 'image',
+        Map<String, String>? fields,
+      }) async {
+    final request = http.MultipartRequest(
+      'POST',
+      _buildUri(path),
+    );
+
+    final token = await TokenStorage.getAccessToken();
+
+    request.headers.addAll({
+      'Accept': 'application/json',
+      if (token != null && token.isNotEmpty)
+        'Authorization': 'Bearer $token',
+    });
+
+    if (fields != null) {
+      request.fields.addAll(fields);
+    }
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        fileFieldName,
+        filePath,
+      ),
+    );
+
+    final streamedResponse = await request.send();
+
+    final response = await http.Response.fromStream(
+      streamedResponse,
+    );
+
+    return _handleResponse(response);
+  }
+
   Future<dynamic> put(
       String path, {
         required Map<String, dynamic> body,
