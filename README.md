@@ -1,34 +1,49 @@
-# 🚗 Vehicle Inspector
+🚗 Vehicle Inspector
 
-Vehicle Inspector is an AI-powered mobile vehicle damage inspection system developed with **Spring Boot**, **FastAPI**, **YOLO**, **Gemini**, **PostgreSQL**, and **Flutter**.
+Vehicle Inspector is an AI-powered mobile vehicle damage inspectionsystem developed with Spring Boot, FastAPI, YOLO,Gemini, PostgreSQL, and Flutter.
 
-The system analyzes vehicle images, detects visible damage, identifies affected vehicle parts, recommends repair actions, and generates a user-friendly AI inspection report with a city-aware estimated repair price range.
+The system analyzes vehicle images, detects visible damage, identifiesaffected vehicle parts, recommends repair actions, and generates auser-friendly AI inspection report with a city-aware estimated repairprice range.
 
----
+✨ Features
 
-# ✨ Features
+📱 Flutter Mobile Application
 
-- 🔐 JWT Authentication & Authorization
-- 👤 User Management
-- 🚙 Vehicle Management
-- 📍 City-Based Inspection Context
-- 📷 Vehicle Image Upload
-- 🤖 AI-Powered Damage Detection
-- 🧩 Multiple Affected Vehicle Part Detection
-- ⚠️ Damage Severity Classification
-- 🔧 Repair Action Recommendation
-- 🧠 Gemini-Powered Inspection Reports
-- 💰 City-Aware Repair Cost Estimation
-- 🔄 Retryable AI Report Generation
-- 📊 Inspection History
-- 🗄 PostgreSQL Database
-- 🌐 RESTful API
+🔐 JWT Authentication & Authorization
 
----
+🔄 Persistent Login & Automatic Session Restoration
 
-# 🏗 Architecture
+👤 User Profile & Secure Logout
 
-```text
+🚙 Vehicle Management
+
+📍 City-Based Inspection Context
+
+📷 Camera / Gallery Vehicle Image Upload
+
+🤖 YOLO-Based Damage Detection
+
+🧩 Multiple Affected Vehicle Part Detection
+
+⚠️ Damage Severity Classification
+
+🎯 Model Confidence Scoring
+
+🔧 Repair Action Recommendation
+
+🧠 Gemini-Powered Inspection Reports
+
+💰 City-Aware Repair Cost Estimation
+
+🔄 Retryable AI Report Generation
+
+📊 Inspection History
+
+🗄 PostgreSQL Persistence
+
+🌐 RESTful API
+
+🏗 Architecture
+
 Flutter Mobile Application
             │
             ▼
@@ -43,60 +58,155 @@ PostgreSQL  FastAPI       Gemini API
               │          + Price Range
               ▼
       Damage / Part Analysis
-```
 
-- **Flutter** provides the mobile application.
-- **Spring Boot** handles authentication, vehicles, inspections, persistence, AI orchestration, and report lifecycle management.
-- **FastAPI** performs image analysis using YOLO models.
-- **YOLO** detects damage types and affected vehicle parts.
-- **Gemini** converts structured ML results into a user-friendly inspection report and estimates a repair price range based on vehicle, damage, and selected city context.
-- **PostgreSQL** stores users, vehicles, inspections, detections, repair recommendations, report status, and generated inspection reports.
+Flutter provides the mobile application and complete end-to-endinspection experience.
 
----
+Spring Boot handles authentication, vehicles, inspections,persistence, AI orchestration, and report lifecycle management.
 
-# 🛠 Tech Stack
+FastAPI performs image analysis using YOLO models.
 
-### Mobile
+YOLO detects damage types and affected vehicle parts.
 
-- Flutter
-- Dart
+Gemini converts structured ML results into a user-friendlyinspection report and estimates a repair price range based onvehicle, damage, and selected city context.
 
-### Backend
+PostgreSQL stores users, vehicles, inspections, detections,repair recommendations, report status, and generated inspectionreports.
 
-- Java
-- Spring Boot
-- Spring Security
-- Spring Data JPA
-- JWT
-- Maven
+🛠 Tech Stack
 
-### AI & LLM
+Mobile
 
-- Python
-- FastAPI
-- Ultralytics YOLO
-- PyTorch
-- Roboflow
-- Google Gemini API
+Flutter
 
-### Database
+Dart
 
-- PostgreSQL
+Backend
 
-### Tools
+Java
 
-- IntelliJ IDEA
-- Android Studio
-- Visual Studio Code
-- Postman
-- Git
-- GitHub
+Spring Boot
 
----
+Spring Security
 
-# 🔄 Inspection Workflow
+Spring Data JPA
 
-```text
+JWT
+
+Maven
+
+AI & LLM
+
+Python
+
+FastAPI
+
+Ultralytics YOLO
+
+PyTorch
+
+Roboflow
+
+Google Gemini API
+
+Database
+
+PostgreSQL
+
+Tools
+
+IntelliJ IDEA
+
+Android Studio
+
+Visual Studio Code
+
+Postman
+
+Git
+
+GitHub
+
+📱 Flutter Mobile Application
+
+Vehicle Inspector includes a Flutter mobile client connected directly tothe Spring Boot REST API.
+
+The mobile application currently supports:
+
+User registration and login
+
+JWT-based persistent sessions
+
+Automatic session restoration
+
+Vehicle listing and management
+
+Inspection creation
+
+City selection
+
+Camera and gallery image selection
+
+Vehicle damage image upload
+
+Real-time analysis loading state
+
+AI-generated inspection result display
+
+Damage severity and confidence display
+
+Detected damage and affected-part visualization
+
+Repair recommendation display
+
+Gemini-generated inspection report
+
+Estimated repair price range
+
+Inspection history
+
+AI report regeneration
+
+User profile
+
+Secure logout
+
+The complete mobile inspection flow is:
+
+Login / Register
+       │
+       ▼
+     Home
+       │
+       ▼
+Select Vehicle
+       │
+       ▼
+ Select City
+       │
+       ▼
+Capture / Select Image
+       │
+       ▼
+ Upload Image
+       │
+       ▼
+Analyzing Screen
+       │
+       ├── YOLO Damage Detection
+       ├── Vehicle Part Detection
+       └── Gemini Report Generation
+       │
+       ▼
+ Inspection Result
+       │
+       ├── Damage Severity
+       ├── Confidence Score
+       ├── Affected Parts
+       ├── Repair Recommendations
+       ├── AI Damage Report
+       └── Estimated Repair Price
+
+🔄 Inspection Workflow
+
 User Login
      │
      ▼
@@ -132,15 +242,11 @@ Save Inspection Report
      │
      ▼
 Return Complete Inspection Result
-```
 
-The ML inspection result and the Gemini report have separate statuses. If Gemini report generation temporarily fails, the completed ML analysis remains available and the report can be regenerated without running YOLO again.
+The ML inspection result and the Gemini report have separate statuses.If Gemini report generation temporarily fails, the completed ML analysisremains available and the report can be regenerated without running YOLOagain.
 
----
+🤖 Example Inspection Response
 
-# 🤖 Example Inspection Response
-
-```json
 {
   "status": "COMPLETED",
   "reportStatus": "COMPLETED",
@@ -178,48 +284,57 @@ The ML inspection result and the Gemini report have separate statuses. If Gemini
     "disclaimer": "The price range is an AI-generated market estimate and is not a final service quote."
   }
 }
-```
 
----
+🧠 AI Inspection Report & Price Estimation
 
-# 🧠 AI Inspection Report & Price Estimation
+Repair prices are no longer managed through administrator-defineddatabase records.
 
-Repair prices are no longer managed through administrator-defined database records.
+After YOLO completes the vehicle damage analysis, Spring Boot sendsstructured inspection information to Gemini, including:
 
-After YOLO completes the vehicle damage analysis, Spring Boot sends structured inspection information to Gemini, including:
+Vehicle brand and model
 
-- Vehicle brand and model
-- Model year
-- Mileage
-- Selected city
-- Damage severity
-- Detected damage types
-- Affected vehicle parts
-- Recommended repair actions
-- Part replacement requirements
-- Model confidence information
+Model year
+
+Mileage
+
+Selected city
+
+Damage severity
+
+Detected damage types
+
+Affected vehicle parts
+
+Recommended repair actions
+
+Part replacement requirements
+
+Model confidence information
 
 Gemini uses this context to generate:
 
-- A readable damage summary
-- Detailed damage description
-- Repair recommendation explanation
-- Estimated minimum repair price
-- Estimated maximum repair price
-- Price reasoning
-- A user-facing disclaimer
+A readable damage summary
 
-The current demo does **not** use live web-search pricing. The estimate is generated from the vehicle, damage, selected city, and general market context available to the language model.
+Detailed damage description
 
-To keep the estimate practical for the demo, the difference between the generated minimum and maximum price is limited to **10,000 TRY**.
+Repair recommendation explanation
 
----
+Estimated minimum repair price
 
-# 🔄 AI Report Retry Flow
+Estimated maximum repair price
+
+Price reasoning
+
+A user-facing disclaimer
+
+The current demo does not use live web-search pricing. The estimateis generated from the vehicle, damage, selected city, and general marketcontext available to the language model.
+
+To keep the estimate practical for the demo, the difference between thegenerated minimum and maximum price is limited to 10,000 TRY.
+
+🔄 AI Report Retry Flow
 
 ML analysis and LLM report generation are handled independently.
 
-```text
 ML Analysis
     │
     ├── Success → InspectionStatus.COMPLETED
@@ -230,71 +345,127 @@ Gemini Report
     ├── Success → ReportStatus.COMPLETED
     │
     └── Failure → ReportStatus.FAILED
-```
 
-If Gemini fails because of a temporary API or quota issue, the inspection is not marked as failed.
+If Gemini fails because of a temporary API or quota issue, theinspection is not marked as failed.
 
 The existing ML result can be reused through:
 
-```http
 POST /api/v1/inspections/{inspectionId}/report
-```
 
-This regenerates only the AI report and does not rerun the YOLO image analysis.
+This regenerates only the AI report and does not rerun the YOLO imageanalysis.
 
----
+🔐 Session Management
 
-# 🔒 Security
+Authentication uses JWT tokens stored securely on the mobile device.
 
-- JWT Authentication
-- BCrypt Password Encryption
-- Stateless Authorization
-- Role-Based Access Control
+After a successful login:
 
----
+The access token is stored using secure storage.
 
-# 🚀 Future Improvements
+When the application starts again, the stored token is checked.
 
-- 📱 Complete Flutter Inspection & Result Screens
-- 📄 PDF Damage Reports
-- 🎯 Improved Damage and Vehicle-Part Models
-- 🌐 Optional Live Pricing / Search Grounding
-- 🐳 Docker Support
-- ☁️ Cloud Deployment
-- 🔔 Push Notifications
+The authenticated user's profile is retrieved from the backend.
 
----
+If the token is still valid, the user is automatically redirected tothe application.
 
-# 👨‍💻 Author
+Invalid or expired sessions are cleared and redirected to the loginscreen.
 
-**Görkem Ertaş**
+Logging out clears the locally stored authentication data and resets thenavigation stack.
+
+🔒 Security
+
+JWT Authentication
+
+BCrypt Password Encryption
+
+Stateless Authorization
+
+Role-Based Access Control
+
+Secure Mobile Token Storage
+
+🚀 Future Improvements
+
+📄 PDF Damage Reports
+
+🎯 Larger and More Diverse Damage Detection Dataset
+
+🎯 Improved Vehicle-Part Classification
+
+📷 Image Quality / Retake Validation
+
+🌐 Optional Live Pricing / Search Grounding
+
+🐳 Docker Support
+
+☁️ Cloud Deployment
+
+🔔 Push Notifications
+
+👨‍💻 Author
+
+Görkem Ertaş
 
 Software Engineer
 
----
+⭐ Project Status
 
-# ⭐ Project Status
+🚧 Actively under development
 
-🚧 **Actively under development**
+Completed
 
-### Completed
+✅ JWT Authentication & Authorization
 
-- ✅ Authentication & Authorization
-- ✅ Vehicle Management
-- ✅ Inspection Management
-- ✅ AI Damage Detection
-- ✅ Multiple Affected Part Detection
-- ✅ Damage Severity Classification
-- ✅ Repair Recommendation
-- ✅ City Selection for Inspections
-- ✅ Gemini AI Report Generation
-- ✅ City-Aware Repair Price Estimation
-- ✅ Persistent Inspection Reports
-- ✅ AI Report Status Management
-- ✅ Retryable AI Report Generation
+✅ User Registration & Login
 
-### In Progress
+✅ Persistent Mobile Sessions
 
-- 🔄 Flutter Mobile Application
-- 🔄 AI Model Improvements
-- 🔄 PDF Report Generation
+✅ Automatic Session Restoration
+
+✅ User Profile & Logout
+
+✅ Vehicle Management
+
+✅ Inspection Management
+
+✅ City Selection for Inspections
+
+✅ Vehicle Image Upload
+
+✅ AI Damage Detection
+
+✅ Multiple Affected Part Detection
+
+✅ Damage Severity Classification
+
+✅ Model Confidence Reporting
+
+✅ Repair Recommendation
+
+✅ Gemini AI Report Generation
+
+✅ City-Aware Repair Price Estimation
+
+✅ Persistent Inspection Reports
+
+✅ AI Report Status Management
+
+✅ Retryable AI Report Generation
+
+✅ Flutter Mobile Application
+
+✅ Inspection Result Screen
+
+✅ Inspection History
+
+✅ End-to-End Mobile Inspection Flow
+
+In Progress
+
+🔄 AI Model Improvements
+
+🔄 Increase AI output accuracy
+
+🔄 PDF Report Generation
+
+🔄 Cloud Deployment
