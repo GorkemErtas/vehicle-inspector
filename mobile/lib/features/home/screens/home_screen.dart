@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/section_title.dart';
+import '../../inspection/screens/create_inspection_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
@@ -154,7 +155,14 @@ class HomeScreen extends StatelessWidget {
                   PrimaryButton(
                     label: 'Analize Başla',
                     icon: Icons.arrow_forward_rounded,
-                    onPressed: () {},
+                    onPressed: () async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) =>
+                          const CreateInspectionScreen(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

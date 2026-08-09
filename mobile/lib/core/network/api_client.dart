@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 import '../constants/api_constants.dart';
 import '../storage/token_storage.dart';
@@ -56,16 +57,39 @@ class ApiClient {
       request.fields.addAll(fields);
     }
 
+    final extension =
+    filePath.split('.').last.toLowerCase();
+
+    final MediaType contentType;
+
+    switch (extension) {
+      case 'png':
+        contentType = MediaType('image', 'png');
+        break;
+
+      case 'webp':
+        contentType = MediaType('image', 'webp');
+        break;
+
+      case 'jpg':
+      case 'jpeg':
+      default:
+        contentType = MediaType('image', 'jpeg');
+    }
+
     request.files.add(
       await http.MultipartFile.fromPath(
         fileFieldName,
         filePath,
+        contentType: contentType,
       ),
     );
 
-    final streamedResponse = await request.send();
+    final streamedResponse =
+    await request.send();
 
-    final response = await http.Response.fromStream(
+    final response =
+    await http.Response.fromStream(
       streamedResponse,
     );
 
