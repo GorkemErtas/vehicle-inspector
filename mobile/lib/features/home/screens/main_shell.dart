@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/widgets/coming_soon_screen.dart';
+import '../../profile/screens/profile_screen.dart';
 import '../../inspection/screens/inspection_history_screen.dart';
 import '../../vehicle/screens/vehicle_list_screen.dart';
 import 'home_screen.dart';
@@ -9,9 +9,13 @@ class MainShell extends StatefulWidget {
   const MainShell({
     super.key,
     required this.fullName,
+    required this.email,
+    required this.role,
   });
 
   final String fullName;
+  final String email;
+  final String role;
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -34,9 +38,10 @@ class _MainShellState extends State<MainShell> {
     ),
     const VehicleListScreen(),
     const InspectionHistoryScreen(),
-    const ComingSoonScreen(
-      title: 'Profil',
-      icon: Icons.person_outline_rounded,
+    ProfileScreen(
+      fullName: widget.fullName,
+      email: widget.email,
+      role: widget.role,
     ),
   ];
 

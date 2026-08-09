@@ -53,6 +53,8 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute<void>(
           builder: (_) => MainShell(
             fullName: authResponse.fullName,
+            email: authResponse.email,
+            role: authResponse.role,
           ),
         ),
       );
@@ -266,16 +268,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {},
-                            child: const Text(
-                              'Şifremi unuttum',
-                            ),
-                          ),
-                        ),
+
+                        const SizedBox(height: 24),
+
                         const SizedBox(height: 12),
                         FilledButton(
                           onPressed:
