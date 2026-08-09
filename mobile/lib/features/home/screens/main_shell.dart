@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/coming_soon_screen.dart';
-import 'home_screen.dart';
-import '../../vehicle/screens/vehicle_list_screen.dart';
 import '../../inspection/screens/inspection_history_screen.dart';
+import '../../vehicle/screens/vehicle_list_screen.dart';
+import 'home_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({
@@ -20,9 +20,17 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
 
+  void _selectTab(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   late final List<Widget> _screens = [
     HomeScreen(
       fullName: widget.fullName,
+      onOpenVehicles: () => _selectTab(1),
+      onOpenInspections: () => _selectTab(2),
     ),
     const VehicleListScreen(),
     const InspectionHistoryScreen(),
@@ -41,11 +49,7 @@ class _MainShellState extends State<MainShell> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        onDestinationSelected: _selectTab,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
