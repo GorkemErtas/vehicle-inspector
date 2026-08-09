@@ -8,6 +8,7 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../models/damage_inspection.dart';
 import '../services/inspection_service.dart';
+import 'analyzing_screen.dart';
 
 class UploadDamageImageScreen extends StatefulWidget {
   const UploadDamageImageScreen({
@@ -85,8 +86,12 @@ class _UploadDamageImageScreenState
         return;
       }
 
-      Navigator.of(context).pop<DamageInspection>(
-        updatedInspection,
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => AnalyzingScreen(
+            inspection: updatedInspection,
+          ),
+        ),
       );
     } catch (exception) {
       if (!mounted) {
