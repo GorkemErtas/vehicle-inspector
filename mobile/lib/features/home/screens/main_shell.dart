@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets/coming_soon_screen.dart';
 import 'home_screen.dart';
 import '../../vehicle/screens/vehicle_list_screen.dart';
+import '../../inspection/screens/inspection_history_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({
@@ -24,10 +25,7 @@ class _MainShellState extends State<MainShell> {
       fullName: widget.fullName,
     ),
     const VehicleListScreen(),
-    const ComingSoonScreen(
-      title: 'Analizler',
-      icon: Icons.description_outlined,
-    ),
+    const InspectionHistoryScreen(),
     const ComingSoonScreen(
       title: 'Profil',
       icon: Icons.person_outline_rounded,
