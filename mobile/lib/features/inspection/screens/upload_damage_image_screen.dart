@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -32,6 +32,8 @@ class _UploadDamageImageScreenState
 
   XFile? _selectedImage;
 
+  Uint8List? _selectedImageBytes;
+
   bool _isUploading = false;
 
   Future<void> _pickImage(
@@ -47,8 +49,15 @@ class _UploadDamageImageScreenState
         return;
       }
 
+      final bytes = await image.readAsBytes();
+
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         _selectedImage = image;
+        _selectedImageBytes = bytes;
       });
     } catch (_) {
       if (!mounted) {
@@ -61,10 +70,23 @@ class _UploadDamageImageScreenState
     }
   }
 
-  Future<void> _uploadImage() async {
-    final image = _selectedImage;
+  String _getContentType(String filename) {
+    final extension =
+    filename.split('.').last.toLowerCase();
 
-    if (image == null) {
+    return switch (extension) {
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      'jpeg' || 'jpg' => 'image/jpeg',
+      _ => 'image/jpeg',
+    };
+  }
+
+  Future<void> _uploadImage() async {
+  final image = _selectedImage;
+  final imageBytes = _selectedImageBytes;
+
+  if (image == null || imageBytes == null) {
       _showMessage(
         'Lütfen önce bir fotoğraf seçin.',
       );
@@ -79,7 +101,9 @@ class _UploadDamageImageScreenState
       final updatedInspection =
       await _inspectionService.uploadImage(
         inspectionId: widget.inspection.id,
-        imagePath: image.path,
+        imageBytes: imageBytes,
+        filename: image.name,
+        contentType: _getContentType(image.name),
       );
 
       if (!mounted) {
@@ -306,10 +330,8 @@ class _UploadDamageImageScreenState
                     ),
                   ],
                 )
-                    : Image.file(
-                  File(
-                    _selectedImage!.path,
-                  ),
+                    : Image.memory(
+                  _selectedImageBytes!,
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,

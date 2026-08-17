@@ -59,12 +59,16 @@ class InspectionService {
 
   Future<DamageInspection> uploadImage({
     required int inspectionId,
-    required String imagePath,
+    required List<int> imageBytes,
+    required String filename,
+    required String contentType,
   }) async {
     final response = await apiClient.postMultipart(
       '/inspections/$inspectionId/image',
-      filePath: imagePath,
+      fileBytes: imageBytes,
+      filename: filename,
       fileFieldName: 'image',
+      contentType: contentType,
     );
 
     return _parseInspection(

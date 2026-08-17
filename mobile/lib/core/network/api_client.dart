@@ -36,16 +36,18 @@ class ApiClient {
 
   Future<dynamic> postMultipart(
       String path, {
-        required String filePath,
+        required List<int> fileBytes,
+        required String filename,
         String fileFieldName = 'image',
-        Map<String, String>? fields,
+        String contentType = 'image/jpeg',
       }) async {
     final request = http.MultipartRequest(
       'POST',
       _buildUri(path),
     );
 
-    final token = await TokenStorage.getAccessToken();
+    final token =
+    await TokenStorage.getAccessToken();
 
     request.headers.addAll({
       'Accept': 'application/json',
@@ -53,35 +55,22 @@ class ApiClient {
         'Authorization': 'Bearer $token',
     });
 
-    if (fields != null) {
-      request.fields.addAll(fields);
-    }
+    final mediaTypeParts =
+    contentType.split('/');
 
-    final extension =
-    filePath.split('.').last.toLowerCase();
-
-    final MediaType contentType;
-
-    switch (extension) {
-      case 'png':
-        contentType = MediaType('image', 'png');
-        break;
-
-      case 'webp':
-        contentType = MediaType('image', 'webp');
-        break;
-
-      case 'jpg':
-      case 'jpeg':
-      default:
-        contentType = MediaType('image', 'jpeg');
-    }
+    final mediaType = MediaType(
+      mediaTypeParts.first,
+      mediaTypeParts.length > 1
+          ? mediaTypeParts.last
+          : 'jpeg',
+    );
 
     request.files.add(
-      await http.MultipartFile.fromPath(
+      http.MultipartFile.fromBytes(
         fileFieldName,
-        filePath,
-        contentType: contentType,
+        fileBytes,
+        filename: filename,
+        contentType: mediaType,
       ),
     );
 
