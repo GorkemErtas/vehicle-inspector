@@ -174,6 +174,11 @@ class _InspectionResultScreenState
         ),
       ),
       body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 1100,
+              ),
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
             20,
@@ -567,6 +572,8 @@ class _InspectionResultScreenState
             ],
           ],
         ),
+      ),
+          ),
       ),
     );
   }

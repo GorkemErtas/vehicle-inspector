@@ -22,6 +22,8 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
+  static const double _desktopBreakpoint = 900;
+
   int _selectedIndex = 0;
 
   void _selectTab(int index) {
@@ -47,37 +49,139 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _selectTab,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Ana Sayfa',
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isDesktop =
+            constraints.maxWidth >= _desktopBreakpoint;
+
+        if (isDesktop) {
+          return Scaffold(
+            body: Row(
+              children: [
+                SafeArea(
+                  child: NavigationRail(
+                    selectedIndex: _selectedIndex,
+                    onDestinationSelected: _selectTab,
+                    labelType: NavigationRailLabelType.all,
+                    leading: Padding(
+                      padding: const EdgeInsets.only(
+                        top: 12,
+                        bottom: 24,
+                      ),
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary,
+                          borderRadius:
+                          BorderRadius.circular(14),
+                        ),
+                        child: Icon(
+                          Icons.car_crash_rounded,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimary,
+                        ),
+                      ),
+                    ),
+                    destinations: const [
+                      NavigationRailDestination(
+                        icon: Icon(Icons.home_outlined),
+                        selectedIcon:
+                        Icon(Icons.home_rounded),
+                        label: Text('Ana Sayfa'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(
+                          Icons.directions_car_outlined,
+                        ),
+                        selectedIcon: Icon(
+                          Icons.directions_car_rounded,
+                        ),
+                        label: Text('Araçlar'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(
+                          Icons.description_outlined,
+                        ),
+                        selectedIcon: Icon(
+                          Icons.description_rounded,
+                        ),
+                        label: Text('Analizler'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(
+                          Icons.person_outline_rounded,
+                        ),
+                        selectedIcon:
+                        Icon(Icons.person_rounded),
+                        label: Text('Profil'),
+                      ),
+                    ],
+                  ),
+                ),
+                const VerticalDivider(
+                  width: 1,
+                  thickness: 1,
+                ),
+                Expanded(
+                  child: IndexedStack(
+                    index: _selectedIndex,
+                    children: _screens,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Scaffold(
+          body: IndexedStack(
+            index: _selectedIndex,
+            children: _screens,
           ),
-          NavigationDestination(
-            icon: Icon(Icons.directions_car_outlined),
-            selectedIcon: Icon(Icons.directions_car_rounded),
-            label: 'Araçlar',
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: _selectTab,
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon:
+                Icon(Icons.home_rounded),
+                label: 'Ana Sayfa',
+              ),
+              NavigationDestination(
+                icon: Icon(
+                  Icons.directions_car_outlined,
+                ),
+                selectedIcon: Icon(
+                  Icons.directions_car_rounded,
+                ),
+                label: 'Araçlar',
+              ),
+              NavigationDestination(
+                icon: Icon(
+                  Icons.description_outlined,
+                ),
+                selectedIcon: Icon(
+                  Icons.description_rounded,
+                ),
+                label: 'Analizler',
+              ),
+              NavigationDestination(
+                icon: Icon(
+                  Icons.person_outline_rounded,
+                ),
+                selectedIcon:
+                Icon(Icons.person_rounded),
+                label: 'Profil',
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.description_outlined),
-            selectedIcon: Icon(Icons.description_rounded),
-            label: 'Analizler',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: 'Profil',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

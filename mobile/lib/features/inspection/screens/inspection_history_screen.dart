@@ -86,7 +86,12 @@ class _InspectionHistoryScreenState
         title: const Text('Analizler'),
       ),
       body: SafeArea(
-        child: FutureBuilder<List<DamageInspection>>(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 1100,
+              ),
+              child: FutureBuilder<List<DamageInspection>>(
           future: _inspectionsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState ==
@@ -243,6 +248,8 @@ class _InspectionHistoryScreenState
             );
           },
         ),
+      ),
+          ),
       ),
     );
   }

@@ -248,7 +248,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: SafeArea(
-        child: RefreshIndicator(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 1100,
+              ),
+              child: RefreshIndicator(
           onRefresh: _loadHomeData,
           child: ListView(
             physics:
@@ -547,6 +552,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+      ),
+          ),
       ),
     );
   }

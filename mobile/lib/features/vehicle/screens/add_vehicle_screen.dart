@@ -112,6 +112,11 @@ class _AddVehicleScreenState
         title: const Text('Araç Ekle'),
       ),
       body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 1100,
+              ),
         child: Form(
           key: _formKey,
           child: ListView(
@@ -332,6 +337,8 @@ class _AddVehicleScreenState
             ],
           ),
         ),
+      ),
+          ),
       ),
     );
   }

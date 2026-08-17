@@ -218,6 +218,11 @@ class _UploadDamageImageScreenState
         ),
       ),
       body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 760,
+              ),
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
             20,
@@ -276,7 +281,10 @@ class _UploadDamageImageScreenState
             GestureDetector(
               onTap: _showImageSourceSheet,
               child: Container(
-                height: 280,
+                constraints: const BoxConstraints(
+                  minHeight: 280,
+                  maxHeight: 420,
+                ),
                 decoration: BoxDecoration(
                   color:
                   colorScheme.surfaceContainerLow,
@@ -363,6 +371,8 @@ class _UploadDamageImageScreenState
             ),
           ],
         ),
+      ),
+          ),
       ),
     );
   }

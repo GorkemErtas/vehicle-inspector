@@ -83,12 +83,26 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: SafeArea(
         child: Center(
-          child: Padding(
-            padding:
-            const EdgeInsets.symmetric(
-              horizontal: 32,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 460,
             ),
-            child: Column(
+            child: Container(
+              margin: const EdgeInsets.symmetric(
+                horizontal: 24,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 40,
+                vertical: 44,
+              ),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: colorScheme.outlineVariant,
+                ),
+              ),
+              child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
@@ -131,6 +145,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

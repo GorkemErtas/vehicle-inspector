@@ -100,7 +100,12 @@ class _VehicleListScreenState
         label: const Text('Araç Ekle'),
       ),
       body: SafeArea(
-        child: FutureBuilder<List<Vehicle>>(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 1100,
+              ),
+              child: FutureBuilder<List<Vehicle>>(
           future: _vehiclesFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState ==
@@ -216,6 +221,8 @@ class _VehicleListScreenState
             );
           },
         ),
+      ),
+          ),
       ),
     );
   }

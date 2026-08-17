@@ -87,6 +87,11 @@ class _AnalyzingScreenState
       child: Scaffold(
         body: SafeArea(
           child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 1100,
+              ),
+          child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(32),
               child: ConstrainedBox(
@@ -217,6 +222,8 @@ class _AnalyzingScreenState
               ),
             ),
           ),
+        ),
+      ),
         ),
       ),
     );

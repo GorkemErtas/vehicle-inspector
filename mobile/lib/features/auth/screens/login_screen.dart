@@ -129,9 +129,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(
-                    maxWidth: 430,
+                    maxWidth: 460,
                   ),
-                  child: Form(
+                  child: Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(
+                        color: colorScheme.outlineVariant,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: 0.05,
+                          ),
+                          blurRadius: 30,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: Form(
                     key: _formKey,
                     child: Column(
                       crossAxisAlignment:
@@ -269,9 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
 
-                        const SizedBox(height: 24),
-
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 28),
                         FilledButton(
                           onPressed:
                           _isLoading ? null : _login,
@@ -362,6 +378,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
+          ),
           ),
         ],
       ),

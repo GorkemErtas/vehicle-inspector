@@ -147,6 +147,11 @@ class _CreateInspectionScreenState
         ),
       ),
       body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 1100,
+              ),
         child: FutureBuilder<List<Vehicle>>(
           future: _vehiclesFuture,
           builder: (context, snapshot) {
@@ -413,6 +418,8 @@ class _CreateInspectionScreenState
             );
           },
         ),
+      ),
+          ),
       ),
     );
   }
